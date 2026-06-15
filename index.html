@@ -187,7 +187,7 @@ body::before {
   background: rgba(148, 163, 184, 0.08);
   border: 1px solid rgba(148, 163, 184, 0.12);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
   white-space: nowrap;
   user-select: none;
   position: relative;
@@ -204,8 +204,7 @@ body::before {
   color: #fff;
   background: linear-gradient(135deg, rgba(34, 211, 238, 0.2), rgba(129, 140, 248, 0.15));
   border-color: var(--cyan);
-  box-shadow: 0 0 20px rgba(34, 211, 238, 0.3), inset 0 0 20px rgba(34, 211, 238, 0.05);
-  animation: tagGlow 2s ease-in-out infinite;
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.3);
 }
 
 .nav-tag.active::after {
@@ -217,18 +216,11 @@ body::before {
   height: 2px;
   background: var(--cyan);
   border-radius: 1px;
-  animation: underlinePulse 1.5s ease-in-out infinite;
 }
 
-@keyframes tagGlow {
-  0%, 100% { box-shadow: 0 0 20px rgba(34, 211, 238, 0.3), inset 0 0 20px rgba(34, 211, 238, 0.05); }
-  50% { box-shadow: 0 0 30px rgba(34, 211, 238, 0.5), inset 0 0 25px rgba(34, 211, 238, 0.08); }
-}
+@keyframes tagGlow { 0%, 100% { box-shadow: 0 0 20px rgba(34, 211, 238, 0.3); } 50% { box-shadow: 0 0 30px rgba(34, 211, 238, 0.5); } }
 
-@keyframes underlinePulse {
-  0%, 100% { opacity: 1; transform: scaleX(1); }
-  50% { opacity: 0.6; transform: scaleX(0.8); }
-}
+@keyframes underlinePulse { 0%, 100% { opacity: 1; transform: scaleX(1); } 50% { opacity: 0.6; transform: scaleX(0.8); } }
 
 /* Main Container */
 .container {
@@ -318,18 +310,17 @@ body::before {
 .section {
   padding: 60px 0;
   opacity: 1;
-  transform: translateY(0);
-  will-change: transform;
+  transform: none;
 }
 
-/* Fade-up animation as progressive enhancement */
-@keyframes fadeUp {
-  from { opacity: 0.3; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Fade-in only (no translateY — that fights against wheel scroll direction) */
+@keyframes fadeIn {
+  from { opacity: 0.4; }
+  to { opacity: 1; }
 }
 
 .section.animate-in {
-  animation: fadeUp 0.6s ease forwards;
+  animation: fadeIn 0.5s ease forwards;
   animation-play-state: paused;
 }
 
@@ -339,7 +330,7 @@ body::before {
 
 /* Fallback for environments without IntersectionObserver */
 @supports not (animation-play-state: paused) {
-  .section { opacity: 1 !important; transform: none !important; }
+  .section { opacity: 1 !important; }
 }
 
 .section-title {
@@ -1649,11 +1640,11 @@ body::before {
     if (!navTagsEl || !tag) return;
     var tagRect = tag.getBoundingClientRect();
     var barRect = navTagsEl.getBoundingClientRect();
-    // Horizontal scroll inside nav bar only — never touches window scroll
+    // Horizontal scroll inside nav bar only — instant to avoid competing with wheel events
     var currentLeft = navTagsEl.scrollLeft;
     var tagCenter = tagRect.left - barRect.left + tagRect.width / 2;
     var desired = currentLeft + tagCenter - barRect.width / 2;
-    navTagsEl.scrollTo({ left: Math.max(0, desired), behavior: 'smooth' });
+    navTagsEl.scrollLeft = Math.max(0, desired);
   }
 
   function scrollToTarget(target, tag) {
@@ -1840,57 +1831,11 @@ body::before {
     });
   });
 
-  // === Metric Counter Animation ===
-  var metrics = document.querySelectorAll('.metric[data-count]');
-  var countedMetrics = new Set();
-
-  function animateCount(el) {
-    var target = parseInt(el.getAttribute('data-count'), 10);
-    if (isNaN(target) || target === 0) return;
-
-    var originalText = el.textContent;
-    var duration = 1500;
-    var startTime = null;
-
-    // Extract the number from the text to know what to replace
-    var numMatch = originalText.match(/\d+/);
-    if (!numMatch) return;
-    var numStr = numMatch[0];
-    var prefix = originalText.substring(0, originalText.indexOf(numStr));
-    var suffix = originalText.substring(originalText.indexOf(numStr) + numStr.length);
-
-    function easeOutQuart(t) {
-      return 1 - Math.pow(1 - t, 4);
-    }
-
-    function step(timestamp) {
-      if (!startTime) startTime = timestamp;
-      var elapsed = timestamp - startTime;
-      var progress = Math.min(elapsed / duration, 1);
-      var easedProgress = easeOutQuart(progress);
-      var current = Math.round(easedProgress * target);
-      el.textContent = prefix + current + suffix;
-
-      if (progress < 1) {
-        requestAnimationFrame(step);
-      } else {
-        el.textContent = originalText;
-      }
-    }
-
-    requestAnimationFrame(step);
-  }
-
-  var metricObserver = new IntersectionObserver(function(entries) {
-    entries.forEach(function(entry) {
-      if (entry.isIntersecting && !countedMetrics.has(entry.target)) {
-        countedMetrics.add(entry.target);
-        animateCount(entry.target);
-      }
-    });
-  }, { threshold: 0.5 });
-
-  metrics.forEach(function(m) { metricObserver.observe(m); });
+  // === Metric Counter Animation — DISABLED ===
+  // The count-up animation modifies text from "0" → "...4-digit", causing
+  // inline-text reflow on every frame as digit widths change. This creates
+  // visible layout shifts that feel like the page is "jumping backward" while
+  // scrolling. Metrics now display their final value directly.
 
   // === Initial state ===
   updateScrollProgress();
