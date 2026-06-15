@@ -33,7 +33,6 @@
 }
 
 html {
-  scroll-behavior: smooth;
   scroll-padding-top: 72px;
 }
 
@@ -1623,74 +1622,162 @@ body::before {
   // === Tag Navigation - click to scroll ===
   const tags = document.querySelectorAll('.nav-tag');
   const navBarEl = document.getElementById('navBar');
+  const navTagsEl = document.getElementById('navTags');
+  var isProgrammaticScroll = false;
+
+  function expandIfCollapsed(target) {
+    // Walk up from target, expand any star-collapsible ancestors so target is rendered
+    var node = target;
+    while (node && node !== document.body) {
+      if (node.classList && node.classList.contains('star-collapsible') && !node.classList.contains('expanded')) {
+        node.classList.add('expanded');
+        var group = node.parentElement;
+        if (group) {
+          var btn = group.querySelector('.star-toggle-btn');
+          if (btn) {
+            btn.classList.add('expanded');
+            var span = btn.querySelector('span');
+            if (span) span.textContent = '收起详情';
+          }
+        }
+      }
+      node = node.parentElement;
+    }
+  }
+
+  function centerTagInNavBar(tag) {
+    if (!navTagsEl || !tag) return;
+    var tagRect = tag.getBoundingClientRect();
+    var barRect = navTagsEl.getBoundingClientRect();
+    // Horizontal scroll inside nav bar only — never touches window scroll
+    var currentLeft = navTagsEl.scrollLeft;
+    var tagCenter = tagRect.left - barRect.left + tagRect.width / 2;
+    var desired = currentLeft + tagCenter - barRect.width / 2;
+    navTagsEl.scrollTo({ left: Math.max(0, desired), behavior: 'smooth' });
+  }
+
+  function scrollToTarget(target, tag) {
+    expandIfCollapsed(target);
+    // Wait one frame for layout after expansion, then compute final position
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        var navHeight = navBarEl ? navBarEl.offsetHeight : 60;
+        var rect = target.getBoundingClientRect();
+        var scrollTop = window.pageYOffset + rect.top - navHeight - 12;
+        var maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+        scrollTop = Math.max(0, Math.min(scrollTop, maxScroll));
+
+        // Update active state immediately and center the tag
+        tags.forEach(function(t) { t.classList.remove('active'); });
+        if (tag) {
+          tag.classList.add('active');
+          centerTagInNavBar(tag);
+        }
+
+        // Custom rAF-based smooth scroll (deterministic, can't be cancelled by IO)
+        smoothScrollTo(scrollTop, 600);
+      });
+    });
+  }
+
+  // Custom smooth scroll — deterministic duration, ease-in-out cubic
+  var currentScrollAnim = null;
+  function smoothScrollTo(targetY, duration) {
+    if (currentScrollAnim) {
+      cancelAnimationFrame(currentScrollAnim);
+      currentScrollAnim = null;
+    }
+    var startY = window.pageYOffset;
+    var distance = targetY - startY;
+    if (Math.abs(distance) < 2) {
+      isProgrammaticScroll = false;
+      return;
+    }
+    var startTime = performance.now();
+    isProgrammaticScroll = true;
+
+    function easeInOutCubic(t) {
+      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    function step(now) {
+      var elapsed = now - startTime;
+      var t = Math.min(1, elapsed / duration);
+      var eased = easeInOutCubic(t);
+      // Use behavior:'instant' to override CSS `scroll-behavior: smooth` per-frame
+      window.scrollTo({ top: startY + distance * eased, behavior: 'instant' });
+      if (t < 1) {
+        currentScrollAnim = requestAnimationFrame(step);
+      } else {
+        currentScrollAnim = null;
+        // Brief settle period before re-enabling observer-driven active updates
+        setTimeout(function() { isProgrammaticScroll = false; }, 100);
+      }
+    }
+    currentScrollAnim = requestAnimationFrame(step);
+  }
 
   tags.forEach(function(tag) {
     tag.addEventListener('click', function() {
       var targetId = tag.getAttribute('data-target');
       var target = document.getElementById(targetId);
       if (!target) return;
-
-      // If target is inside a collapsed star-collapsible, expand it first
-      var collapsible = target.closest('.star-collapsible');
-      if (collapsible && !collapsible.classList.contains('expanded')) {
-        collapsible.classList.add('expanded');
-        var btn = collapsible.parentElement.querySelector('.star-toggle-btn');
-        if (btn) {
-          btn.classList.add('expanded');
-          btn.querySelector('span') && (btn.querySelector('span').textContent = '收起详情');
-        }
-      }
-      // Also expand parent role-block's collapsible if needed
-      var parentBlock = target.closest('.role-block');
-      if (parentBlock) {
-        var parentCollapsible = parentBlock.querySelector('.star-collapsible');
-        if (parentCollapsible && !parentCollapsible.classList.contains('expanded')) {
-          parentCollapsible.classList.add('expanded');
-          var btn2 = parentBlock.querySelector('.star-toggle-btn');
-          if (btn2) {
-            btn2.classList.add('expanded');
-            var span2 = btn2.querySelector('span');
-            if (span2) span2.textContent = '收起详情';
-          }
-        }
-      }
-
-      // Calculate scroll position manually to avoid scrollIntoView quirks
-      var navHeight = navBarEl ? navBarEl.offsetHeight : 60;
-      var targetRect = target.getBoundingClientRect();
-      var scrollTop = window.pageYOffset + targetRect.top - navHeight - 16;
-
-      window.scrollTo({ top: Math.max(0, scrollTop), behavior: 'smooth' });
-
-      // Update active tag immediately
-      tags.forEach(function(t) { t.classList.remove('active'); });
-      tag.classList.add('active');
+      scrollToTarget(target, tag);
     });
   });
 
-  // === Active tag tracking ===
+  // === Active tag tracking via scroll position (more reliable than IntersectionObserver) ===
   const tagTargets = [];
   tags.forEach(function(tag) {
     var targetId = tag.getAttribute('data-target');
     var el = document.getElementById(targetId);
     if (el) tagTargets.push({ tag: tag, el: el });
   });
+  // Sort by document order (absolute Y position) — nav-tag display order may differ from doc order
+  tagTargets.sort(function(a, b) {
+    var ay = a.el.getBoundingClientRect().top + window.pageYOffset;
+    var by = b.el.getBoundingClientRect().top + window.pageYOffset;
+    if (Math.abs(ay - by) > 0.5) return ay - by;
+    // Tie: use actual DOM order so document-earlier element comes first
+    var pos = a.el.compareDocumentPosition(b.el);
+    if (pos & Node.DOCUMENT_POSITION_FOLLOWING) return -1;
+    if (pos & Node.DOCUMENT_POSITION_PRECEDING) return 1;
+    return 0;
+  });
 
-  var tagObserver = new IntersectionObserver(function(entries) {
-    entries.forEach(function(entry) {
-      if (entry.isIntersecting) {
-        var matchedTag = tagTargets.find(function(t) { return t.el === entry.target; });
-        if (matchedTag) {
-          tags.forEach(function(t) { t.classList.remove('active'); });
-          matchedTag.tag.classList.add('active');
-          // Scroll the active tag into view in the nav bar
-          matchedTag.tag.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-        }
+  var rafPending = false;
+  function updateActiveTag() {
+    if (isProgrammaticScroll) { rafPending = false; return; }
+    var navHeight = navBarEl ? navBarEl.offsetHeight : 60;
+    var triggerLine = navHeight + 24;
+    var current = null;
+    // Walk in document order — pick the last one whose top has passed the trigger line
+    for (var i = 0; i < tagTargets.length; i++) {
+      var rect = tagTargets[i].el.getBoundingClientRect();
+      if (rect.top <= triggerLine) {
+        current = tagTargets[i];
       }
-    });
-  }, { threshold: 0.1, rootMargin: '-72px 0px -40% 0px' });
+    }
+    // Edge case: bottom of page — pick last one
+    if (window.innerHeight + window.pageYOffset >= document.documentElement.scrollHeight - 4) {
+      current = tagTargets[tagTargets.length - 1];
+    }
+    if (current && !current.tag.classList.contains('active')) {
+      tags.forEach(function(t) { t.classList.remove('active'); });
+      current.tag.classList.add('active');
+      centerTagInNavBar(current.tag);
+    }
+    rafPending = false;
+  }
 
-  tagTargets.forEach(function(t) { tagObserver.observe(t.el); });
+  window.addEventListener('scroll', function() {
+    if (!rafPending) {
+      rafPending = true;
+      requestAnimationFrame(updateActiveTag);
+    }
+  }, { passive: true });
+  // Initial
+  setTimeout(updateActiveTag, 200);
 
   // === Timeline item active tracking ===
   var timelineItems = document.querySelectorAll('.timeline-item');
