@@ -34,7 +34,7 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 80px;
+  scroll-padding-top: 72px;
 }
 
 body {
@@ -893,7 +893,7 @@ body::before {
       </span>
       <span class="contact-item">
         <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-        男 | 26岁 | 厦门大学
+        男 | 27岁 | 厦门大学
       </span>
     </div>
     <div class="hero-tagline">
@@ -932,6 +932,7 @@ body::before {
         </div>
 
         <!-- Role 1: AI Agent System - FULLY EXPANDED BY DEFAULT -->
+        <div id="sec-llm-app"></div>
         <div class="role-block" id="sec-zero-to-one">
           <div class="role-title">职责一：AI Agent运营系统从0到1搭建（核心亮点）</div>
           <div class="star-group" data-expanded-default="true">
@@ -948,7 +949,7 @@ body::before {
                   利用大模型+Agent技术，独立设计并落地一套完整的"AI运营超级助手"——从框架设计、知识工程、技能开发到工程部署全链路Owner，实现运营团队工作范式从"人找数据"到"AI主动服务"的转变。
                 </div>
               </div>
-              <div class="star-item star-a" id="sec-llm-app">
+              <div class="star-item star-a">
                 <span class="star-label">Action</span>
                 <div class="star-content">
                   <ul>
@@ -1621,13 +1622,49 @@ body::before {
 
   // === Tag Navigation - click to scroll ===
   const tags = document.querySelectorAll('.nav-tag');
+  const navBarEl = document.getElementById('navBar');
+
   tags.forEach(function(tag) {
     tag.addEventListener('click', function() {
       var targetId = tag.getAttribute('data-target');
       var target = document.getElementById(targetId);
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (!target) return;
+
+      // If target is inside a collapsed star-collapsible, expand it first
+      var collapsible = target.closest('.star-collapsible');
+      if (collapsible && !collapsible.classList.contains('expanded')) {
+        collapsible.classList.add('expanded');
+        var btn = collapsible.parentElement.querySelector('.star-toggle-btn');
+        if (btn) {
+          btn.classList.add('expanded');
+          btn.querySelector('span') && (btn.querySelector('span').textContent = '收起详情');
+        }
       }
+      // Also expand parent role-block's collapsible if needed
+      var parentBlock = target.closest('.role-block');
+      if (parentBlock) {
+        var parentCollapsible = parentBlock.querySelector('.star-collapsible');
+        if (parentCollapsible && !parentCollapsible.classList.contains('expanded')) {
+          parentCollapsible.classList.add('expanded');
+          var btn2 = parentBlock.querySelector('.star-toggle-btn');
+          if (btn2) {
+            btn2.classList.add('expanded');
+            var span2 = btn2.querySelector('span');
+            if (span2) span2.textContent = '收起详情';
+          }
+        }
+      }
+
+      // Calculate scroll position manually to avoid scrollIntoView quirks
+      var navHeight = navBarEl ? navBarEl.offsetHeight : 60;
+      var targetRect = target.getBoundingClientRect();
+      var scrollTop = window.pageYOffset + targetRect.top - navHeight - 16;
+
+      window.scrollTo({ top: Math.max(0, scrollTop), behavior: 'smooth' });
+
+      // Update active tag immediately
+      tags.forEach(function(t) { t.classList.remove('active'); });
+      tag.classList.add('active');
     });
   });
 
@@ -1646,11 +1683,12 @@ body::before {
         if (matchedTag) {
           tags.forEach(function(t) { t.classList.remove('active'); });
           matchedTag.tag.classList.add('active');
+          // Scroll the active tag into view in the nav bar
           matchedTag.tag.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         }
       }
     });
-  }, { threshold: 0.3, rootMargin: '-80px 0px -50% 0px' });
+  }, { threshold: 0.1, rootMargin: '-72px 0px -40% 0px' });
 
   tagTargets.forEach(function(t) { tagObserver.observe(t.el); });
 
