@@ -20,6 +20,7 @@
   --cyan: #22d3ee;
   --cyan-glow: rgba(34, 211, 238, 0.3);
   --cyan-dim: rgba(34, 211, 238, 0.1);
+  --blue: #60a5fa;
   --indigo: #818cf8;
   --orange: #fb923c;
   --green: #4ade80;
@@ -103,6 +104,18 @@ body::before {
   75% { transform: translate(20px, 20px) scale(1.02); }
 }
 
+/* Scroll Progress Bar */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--cyan), var(--indigo), var(--orange));
+  z-index: 1100;
+  transition: width 0.1s linear;
+}
+
 /* Sticky Navigation */
 .nav-bar {
   position: sticky;
@@ -120,6 +133,39 @@ body::before {
   box-shadow: 0 4px 30px rgba(34, 211, 238, 0.08);
 }
 
+.nav-tags-wrapper {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Fade edges for scroll indicator */
+.nav-tags-wrapper::before,
+.nav-tags-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40px;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.nav-tags-wrapper::before {
+  left: 0;
+  background: linear-gradient(90deg, rgba(12, 12, 20, 0.95), transparent);
+}
+
+.nav-tags-wrapper::after {
+  right: 0;
+  background: linear-gradient(-90deg, rgba(12, 12, 20, 0.95), transparent);
+}
+
+.nav-tags-wrapper.scroll-left::before { opacity: 1; }
+.nav-tags-wrapper.scroll-right::after { opacity: 1; }
+
 .nav-tags {
   display: flex;
   gap: 8px;
@@ -127,8 +173,6 @@ body::before {
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  max-width: 1200px;
-  margin: 0 auto;
   align-items: center;
 }
 
@@ -147,6 +191,7 @@ body::before {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
   user-select: none;
+  position: relative;
 }
 
 .nav-tag:hover {
@@ -161,6 +206,29 @@ body::before {
   background: linear-gradient(135deg, rgba(34, 211, 238, 0.2), rgba(129, 140, 248, 0.15));
   border-color: var(--cyan);
   box-shadow: 0 0 20px rgba(34, 211, 238, 0.3), inset 0 0 20px rgba(34, 211, 238, 0.05);
+  animation: tagGlow 2s ease-in-out infinite;
+}
+
+.nav-tag.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 20%;
+  right: 20%;
+  height: 2px;
+  background: var(--cyan);
+  border-radius: 1px;
+  animation: underlinePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes tagGlow {
+  0%, 100% { box-shadow: 0 0 20px rgba(34, 211, 238, 0.3), inset 0 0 20px rgba(34, 211, 238, 0.05); }
+  50% { box-shadow: 0 0 30px rgba(34, 211, 238, 0.5), inset 0 0 25px rgba(34, 211, 238, 0.08); }
+}
+
+@keyframes underlinePulse {
+  0%, 100% { opacity: 1; transform: scaleX(1); }
+  50% { opacity: 0.6; transform: scaleX(0.8); }
 }
 
 /* Main Container */
@@ -247,17 +315,32 @@ body::before {
   border-radius: 12px;
 }
 
-/* Section Styles */
+/* Section Styles - VISIBLE BY DEFAULT */
 .section {
   padding: 60px 0;
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
-}
-
-.section.visible {
   opacity: 1;
   transform: translateY(0);
+  will-change: transform;
+}
+
+/* Fade-up animation as progressive enhancement */
+@keyframes fadeUp {
+  from { opacity: 0.3; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.section.animate-in {
+  animation: fadeUp 0.6s ease forwards;
+  animation-play-state: paused;
+}
+
+.section.animate-in.visible {
+  animation-play-state: running;
+}
+
+/* Fallback for environments without IntersectionObserver */
+@supports not (animation-play-state: paused) {
+  .section { opacity: 1 !important; transform: none !important; }
 }
 
 .section-title {
@@ -324,13 +407,18 @@ body::before {
   top: 0;
   bottom: 0;
   width: 2px;
-  background: linear-gradient(180deg, var(--cyan), var(--indigo), var(--orange), var(--green), transparent);
+  background: linear-gradient(180deg, var(--cyan), var(--blue), var(--orange), var(--green), var(--rose), transparent);
   opacity: 0.3;
 }
 
 .timeline-item {
   position: relative;
   margin-bottom: 60px;
+  transition: transform 0.3s ease;
+}
+
+.timeline-item:hover {
+  transform: translateX(4px);
 }
 
 .timeline-dot {
@@ -344,12 +432,60 @@ body::before {
   border: 3px solid var(--cyan);
   box-shadow: 0 0 12px var(--cyan-glow), 0 0 24px rgba(34, 211, 238, 0.1);
   z-index: 2;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.timeline-item:nth-child(2) .timeline-dot { border-color: var(--indigo); box-shadow: 0 0 12px rgba(129, 140, 248, 0.3); }
-.timeline-item:nth-child(3) .timeline-dot { border-color: var(--orange); box-shadow: 0 0 12px rgba(251, 146, 60, 0.3); }
-.timeline-item:nth-child(4) .timeline-dot { border-color: var(--green); box-shadow: 0 0 12px rgba(74, 222, 128, 0.3); }
-.timeline-item:nth-child(5) .timeline-dot { border-color: var(--rose); box-shadow: 0 0 12px rgba(251, 113, 133, 0.3); }
+.timeline-item.active .timeline-dot {
+  animation: dotPulse 2s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 12px var(--cyan-glow), 0 0 24px rgba(34, 211, 238, 0.1); }
+  50% { transform: scale(1.3); box-shadow: 0 0 20px var(--cyan-glow), 0 0 40px rgba(34, 211, 238, 0.2); }
+}
+
+/* Company-specific colors */
+.timeline-item[data-company="hema"] .timeline-dot { border-color: var(--cyan); box-shadow: 0 0 12px rgba(34, 211, 238, 0.3); }
+.timeline-item[data-company="hema"] .job-company { color: var(--cyan); }
+.timeline-item[data-company="hema"] .job-summary { border-left-color: rgba(34, 211, 238, 0.3); }
+
+.timeline-item[data-company="baidu"] .timeline-dot { border-color: var(--blue); box-shadow: 0 0 12px rgba(96, 165, 250, 0.3); }
+.timeline-item[data-company="baidu"] .job-company { color: var(--blue); }
+.timeline-item[data-company="baidu"] .job-summary { border-left-color: rgba(96, 165, 250, 0.3); }
+
+.timeline-item[data-company="didi"] .timeline-dot { border-color: var(--orange); box-shadow: 0 0 12px rgba(251, 146, 60, 0.3); }
+.timeline-item[data-company="didi"] .job-company { color: var(--orange); }
+.timeline-item[data-company="didi"] .job-summary { border-left-color: rgba(251, 146, 60, 0.3); }
+
+.timeline-item[data-company="yonghui"] .timeline-dot { border-color: var(--green); box-shadow: 0 0 12px rgba(74, 222, 128, 0.3); }
+.timeline-item[data-company="yonghui"] .job-company { color: var(--green); }
+.timeline-item[data-company="yonghui"] .job-summary { border-left-color: rgba(74, 222, 128, 0.3); }
+
+.timeline-item[data-company="jd"] .timeline-dot { border-color: var(--rose); box-shadow: 0 0 12px rgba(251, 113, 133, 0.3); }
+.timeline-item[data-company="jd"] .job-company { color: var(--rose); }
+.timeline-item[data-company="jd"] .job-summary { border-left-color: rgba(251, 113, 133, 0.3); }
+
+/* Active dot pulse per company */
+.timeline-item[data-company="baidu"].active .timeline-dot { animation-name: dotPulseBlue; }
+@keyframes dotPulseBlue {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 12px rgba(96, 165, 250, 0.3); }
+  50% { transform: scale(1.3); box-shadow: 0 0 20px rgba(96, 165, 250, 0.5), 0 0 40px rgba(96, 165, 250, 0.2); }
+}
+.timeline-item[data-company="didi"].active .timeline-dot { animation-name: dotPulseOrange; }
+@keyframes dotPulseOrange {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 12px rgba(251, 146, 60, 0.3); }
+  50% { transform: scale(1.3); box-shadow: 0 0 20px rgba(251, 146, 60, 0.5), 0 0 40px rgba(251, 146, 60, 0.2); }
+}
+.timeline-item[data-company="yonghui"].active .timeline-dot { animation-name: dotPulseGreen; }
+@keyframes dotPulseGreen {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 12px rgba(74, 222, 128, 0.3); }
+  50% { transform: scale(1.3); box-shadow: 0 0 20px rgba(74, 222, 128, 0.5), 0 0 40px rgba(74, 222, 128, 0.2); }
+}
+.timeline-item[data-company="jd"].active .timeline-dot { animation-name: dotPulseRose; }
+@keyframes dotPulseRose {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 12px rgba(251, 113, 133, 0.3); }
+  50% { transform: scale(1.3); box-shadow: 0 0 20px rgba(251, 113, 133, 0.5), 0 0 40px rgba(251, 113, 133, 0.2); }
+}
 
 .job-header {
   margin-bottom: 16px;
@@ -364,7 +500,6 @@ body::before {
 
 .job-company {
   font-size: 1rem;
-  color: var(--cyan);
   font-weight: 500;
   margin-bottom: 4px;
 }
@@ -487,6 +622,53 @@ body::before {
 .star-item.star-a .star-content ul li::before { background: var(--cyan); }
 .star-item.star-r .star-content ul li::before { background: var(--green); }
 
+/* Collapsible STAR sections */
+.star-collapsible {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  opacity: 0;
+}
+
+.star-collapsible.expanded {
+  max-height: 3000px;
+  opacity: 1;
+}
+
+.star-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px 18px;
+  background: rgba(148, 163, 184, 0.05);
+  border: none;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--font-sans);
+}
+
+.star-toggle-btn:hover {
+  background: rgba(34, 211, 238, 0.05);
+  color: var(--cyan);
+}
+
+.star-toggle-btn svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.3s ease;
+  fill: currentColor;
+}
+
+.star-toggle-btn.expanded svg {
+  transform: rotate(180deg);
+}
+
 /* Metric Pills */
 .metric {
   display: inline-block;
@@ -514,6 +696,46 @@ body::before {
   background: rgba(251, 146, 60, 0.12);
   color: var(--orange);
   border: 1px solid rgba(251, 146, 60, 0.2);
+}
+
+/* Back to Top Button */
+.back-to-top {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(34, 211, 238, 0.15);
+  border: 1px solid rgba(34, 211, 238, 0.3);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 999;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.3s ease, transform 0.3s ease, background 0.3s ease;
+  pointer-events: none;
+}
+
+.back-to-top.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.back-to-top:hover {
+  background: rgba(34, 211, 238, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(34, 211, 238, 0.3);
+}
+
+.back-to-top svg {
+  width: 20px;
+  height: 20px;
+  fill: var(--cyan);
 }
 
 /* Bottom Sections */
@@ -574,6 +796,7 @@ body::before {
   .timeline-dot { left: -21px; width: 12px; height: 12px; }
   .bottom-grid { grid-template-columns: 1fr; }
   .section { padding: 40px 0; }
+  .back-to-top { bottom: 20px; right: 20px; width: 40px; height: 40px; }
 }
 
 @media (max-width: 480px) {
@@ -588,7 +811,7 @@ body::before {
     background: #fff !important;
     color: #1a1a1a !important;
   }
-  body::before, .orb { display: none !important; }
+  body::before, .orb, .scroll-progress, .back-to-top { display: none !important; }
   .nav-bar { display: none !important; }
   .hero-name {
     -webkit-text-fill-color: #1a1a1a !important;
@@ -601,10 +824,13 @@ body::before {
   .star-group { border: 1px solid #ddd; }
   .star-item { background: #fafafa !important; }
   .star-label { border: 1px solid currentColor; }
+  .star-collapsible { max-height: none !important; opacity: 1 !important; }
+  .star-toggle-btn { display: none !important; }
   .job-company { color: #0066cc !important; }
   .job-summary { background: #f5f5f5 !important; border-left-color: #0066cc !important; }
   .timeline::before { background: #ccc !important; }
-  .timeline-dot { border-color: #333 !important; box-shadow: none !important; }
+  .timeline-dot { border-color: #333 !important; box-shadow: none !important; animation: none !important; }
+  .timeline-item:hover { transform: none !important; }
   .metric { border: 1px solid #999 !important; background: #f0f0f0 !important; color: #333 !important; }
   .edu-card, .bottom-card { background: #f9f9f9 !important; border-color: #ddd !important; }
   .hero { padding: 40px 0 20px; }
@@ -616,9 +842,17 @@ body::before {
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: rgba(34, 211, 238, 0.3); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(34, 211, 238, 0.5); }
+
+/* Metric counter animation */
+.metric[data-count] {
+  transition: transform 0.2s ease;
+}
 </style>
 </head>
 <body>
+
+<!-- Scroll Progress Bar -->
+<div class="scroll-progress" id="scrollProgress"></div>
 
 <!-- Ambient Orbs -->
 <div class="orb orb-1"></div>
@@ -627,16 +861,18 @@ body::before {
 
 <!-- Sticky Navigation -->
 <nav class="nav-bar" id="navBar">
-  <div class="nav-tags" id="navTags">
-    <span class="nav-tag active" data-target="hero">AI Agent架构师</span>
-    <span class="nav-tag" data-target="sec-multiagent">Multi-Agent系统</span>
-    <span class="nav-tag" data-target="sec-search-product">搜索产品</span>
-    <span class="nav-tag" data-target="sec-data-driven">数据驱动</span>
-    <span class="nav-tag" data-target="sec-zero-to-one">0→1体系搭建</span>
-    <span class="nav-tag" data-target="sec-llm-app">大模型应用</span>
-    <span class="nav-tag" data-target="sec-ecom-search">电商搜索</span>
-    <span class="nav-tag" data-target="sec-strategy-ops">策略运营</span>
-    <span class="nav-tag" data-target="sec-digital">数字化转型</span>
+  <div class="nav-tags-wrapper" id="navTagsWrapper">
+    <div class="nav-tags" id="navTags">
+      <span class="nav-tag active" data-target="hero">AI Agent架构师</span>
+      <span class="nav-tag" data-target="sec-multiagent">Multi-Agent系统</span>
+      <span class="nav-tag" data-target="sec-search-product">搜索产品</span>
+      <span class="nav-tag" data-target="sec-data-driven">数据驱动</span>
+      <span class="nav-tag" data-target="sec-zero-to-one">0->1体系搭建</span>
+      <span class="nav-tag" data-target="sec-llm-app">大模型应用</span>
+      <span class="nav-tag" data-target="sec-ecom-search">电商搜索</span>
+      <span class="nav-tag" data-target="sec-strategy-ops">策略运营</span>
+      <span class="nav-tag" data-target="sec-digital">数字化转型</span>
+    </div>
   </div>
 </nav>
 
@@ -669,7 +905,7 @@ body::before {
   <section class="section" id="sec-education">
     <h2 class="section-title">教育经历</h2>
     <div class="edu-card">
-      <div class="edu-icon">🎓</div>
+      <div class="edu-icon">&#127891;</div>
       <div class="edu-info">
         <h3>厦门大学 - 信息与通信工程 - 本科</h3>
         <p>2016.08 - 2020.08</p>
@@ -684,7 +920,7 @@ body::before {
     <div class="timeline">
 
       <!-- Alibaba Hema -->
-      <div class="timeline-item" id="sec-multiagent">
+      <div class="timeline-item" id="sec-multiagent" data-company="hema">
         <div class="timeline-dot"></div>
         <div class="job-header">
           <h3 class="job-title">AI&搜索运营专家（兼任搜索产品）</h3>
@@ -695,48 +931,54 @@ body::before {
           主要负责盒马App搜索全链路运营及AI Agent运营效率体系的从0到1搭建。核心成果：独立设计并落地一套多Agent协作的AI运营系统，将搜索质量监控、品类归因分析、异动响应等运营全流程实现AI自动化。同时兼任搜索产品，覆盖100+需求PRD。
         </div>
 
-        <!-- Role 1: AI Agent System -->
+        <!-- Role 1: AI Agent System - FULLY EXPANDED BY DEFAULT -->
         <div class="role-block" id="sec-zero-to-one">
           <div class="role-title">职责一：AI Agent运营系统从0到1搭建（核心亮点）</div>
-          <div class="star-group">
+          <div class="star-group" data-expanded-default="true">
             <div class="star-item star-s">
               <span class="star-label">Situation</span>
               <div class="star-content">
                 搜索运营团队日常工作涉及大量数据取数分析（ODPS SQL）、搜索配置变更、异动归因、周月报产出等重复性工作，人效瓶颈明显；同时运营知识散落在个人经验中，团队协作存在口径不一致、分析路径不可复制的问题。
               </div>
             </div>
-            <div class="star-item star-t">
-              <span class="star-label">Task</span>
-              <div class="star-content">
-                利用大模型+Agent技术，独立设计并落地一套完整的"AI运营超级助手"——从框架设计、知识工程、技能开发到工程部署全链路Owner，实现运营团队工作范式从"人找数据"到"AI主动服务"的转变。
+            <div class="star-collapsible expanded" data-default-expanded="true">
+              <div class="star-item star-t">
+                <span class="star-label">Task</span>
+                <div class="star-content">
+                  利用大模型+Agent技术，独立设计并落地一套完整的"AI运营超级助手"——从框架设计、知识工程、技能开发到工程部署全链路Owner，实现运营团队工作范式从"人找数据"到"AI主动服务"的转变。
+                </div>
               </div>
-            </div>
-            <div class="star-item star-a" id="sec-llm-app">
-              <span class="star-label">Action</span>
-              <div class="star-content">
-                <ul>
-                  <li><strong>Hermes框架设计</strong>：自研多Agent协作框架"Hermes"，核心架构包括——①三层角色注册表（决策层/分析层/执行层）+意图路由引擎+Agent间协商协议；②7段任务管线闭环（Emerge涌现→Route路由→Decompose拆解→Execute执行→Verify验收→Retro复盘→Lesson沉淀），支持任务DAG自动编排；③4档渐进信任机制（建议模式→灰度→半托管→全托管），严级护栏硬连线不可跳过；④自愈4档降级策略（改参→换Agent→降级→升人）保障稳定性。</li>
-                  <li><strong>多Loop闭环机制</strong>：设计并实现6个核心Loop——Plan-and-Execute Loop（动态规划+反思执行循环）、Agent-Eval Loop（输出质量评估与反馈闭环）、Knowledge-Auto-Updater Loop（知识源变更自动检测+增量更新）、Execution-Progress-Notifier Loop（执行过程实时状态推送）、RAG-Knowledge-Retriever Loop（检索增强+语义召回）、State-Persistence Loop（跨session状态持久化），形成"规划→执行→评估→学习→沉淀"的自进化飞轮。</li>
-                  <li><strong>知识工程体系</strong>：将4套业务知识库（运营SOP/产品PRD/搜索算法/数据口径）系统化蒸馏为Agent可调用的结构化知识，构建本地RAG检索系统（GTE-large向量模型+关键词混合检索，<span class="metric metric-cyan">2695个知识chunk索引</span>）；知识自动更新管线监控钉钉表格/语雀文档等多知识源变更，增量同步至向量库。</li>
-                  <li><strong>技能模块开发</strong>：累计开发<span class="metric metric-cyan">99个专业AI技能模块</span>，覆盖搜索质量诊断、笔单价多维归因、品类货架CVR分析、节日圈品爆发预测、搜索配置自动变更、自动化周月报生成、App体验日检、竞品数据采集等全业务场景；每个模块内置标准SQL模板、分析逻辑链、可视化输出规范与自检验证。</li>
-                  <li><strong>工程落地与集成</strong>：打通ODPS数据平台自动取数→大模型分析归因→图表/HTML报告自动生成→Hippo Work在线发布→钉钉群自动推送全链路闭环；接入钉钉IM双向对话（Stream模式），支持团队成员在群内@机器人直接触发分析任务。</li>
-                  <li><strong>团队赋能与开源</strong>：为团队成员封装3个独立Plugin（搜索排查专家/品类圈分析专家/笔单归因专家），内置权限自动探测与降级策略，一键安装开箱即用；产出.skill开源打包方案（含54个子skill+编排层+安装脚本），支持跨团队复制推广。</li>
-                </ul>
+              <div class="star-item star-a" id="sec-llm-app">
+                <span class="star-label">Action</span>
+                <div class="star-content">
+                  <ul>
+                    <li><strong>Hermes框架设计</strong>：自研多Agent协作框架"Hermes"，核心架构包括——①三层角色注册表（决策层/分析层/执行层）+意图路由引擎+Agent间协商协议；②7段任务管线闭环（Emerge涌现→Route路由→Decompose拆解→Execute执行→Verify验收→Retro复盘→Lesson沉淀），支持任务DAG自动编排；③4档渐进信任机制（建议模式→灰度→半托管→全托管），严级护栏硬连线不可跳过；④自愈4档降级策略（改参→换Agent→降级→升人）保障稳定性。</li>
+                    <li><strong>多Loop闭环机制</strong>：设计并实现6个核心Loop——Plan-and-Execute Loop（动态规划+反思执行循环）、Agent-Eval Loop（输出质量评估与反馈闭环）、Knowledge-Auto-Updater Loop（知识源变更自动检测+增量更新）、Execution-Progress-Notifier Loop（执行过程实时状态推送）、RAG-Knowledge-Retriever Loop（检索增强+语义召回）、State-Persistence Loop（跨session状态持久化），形成"规划→执行→评估→学习→沉淀"的自进化飞轮。</li>
+                    <li><strong>知识工程体系</strong>：将4套业务知识库（运营SOP/产品PRD/搜索算法/数据口径）系统化蒸馏为Agent可调用的结构化知识，构建本地RAG检索系统（GTE-large向量模型+关键词混合检索，<span class="metric metric-cyan" data-count="2695">2695</span>个知识chunk索引）；知识自动更新管线监控钉钉表格/语雀文档等多知识源变更，增量同步至向量库。</li>
+                    <li><strong>技能模块开发</strong>：累计开发<span class="metric metric-cyan" data-count="99">99</span>个专业AI技能模块，覆盖搜索质量诊断、笔单价多维归因、品类货架CVR分析、节日圈品爆发预测、搜索配置自动变更、自动化周月报生成、App体验日检、竞品数据采集等全业务场景；每个模块内置标准SQL模板、分析逻辑链、可视化输出规范与自检验证。</li>
+                    <li><strong>工程落地与集成</strong>：打通ODPS数据平台自动取数→大模型分析归因→图表/HTML报告自动生成→Hippo Work在线发布→钉钉群自动推送全链路闭环；接入钉钉IM双向对话（Stream模式），支持团队成员在群内@机器人直接触发分析任务。</li>
+                    <li><strong>团队赋能与开源</strong>：为团队成员封装3个独立Plugin（搜索排查专家/品类圈分析专家/笔单归因专家），内置权限自动探测与降级策略，一键安装开箱即用；产出.skill开源打包方案（含54个子skill+编排层+安装脚本），支持跨团队复制推广。</li>
+                  </ul>
+                </div>
               </div>
             </div>
             <div class="star-item star-r">
               <span class="star-label">Result</span>
               <div class="star-content">
                 <ul>
-                  <li>系统上线后团队<span class="metric metric-up">日均自动化处理数据分析任务20+次</span>，覆盖搜索/分类/交易三大数据域</li>
+                  <li>系统上线后团队<span class="metric metric-up" data-count="20">日均自动化处理数据分析任务20+次</span>，覆盖搜索/分类/交易三大数据域</li>
                   <li>搜索badcase排查：<span class="metric metric-up">从人工2小时缩短至5分钟</span>内自动输出全链路根因（召回→排序→NER→配置）+修复建议</li>
                   <li>品类周报/月报：从人工半天制作到<span class="metric metric-up">一键自动生成</span>含趋势图+归因瀑布图的完整报告并推送</li>
-                  <li>query异动监控：<span class="metric metric-cyan">日均自动扫描6300+高量级关键词</span>，5维度WoW对比自动归因273个异动词并生成诊断看板</li>
-                  <li>知识沉淀：AI系统累计沉淀<span class="metric metric-cyan">2695条结构化知识chunk</span>+<span class="metric metric-cyan">99个可复用技能模块</span>，运营经验首次实现组织级可复制</li>
-                  <li>框架验证：Hermes框架Demo通过——Agent间自动协商，<span class="metric metric-up">单任务端到端无人干预完成率达85%+</span></li>
+                  <li>query异动监控：<span class="metric metric-cyan" data-count="6300">日均自动扫描6300+高量级关键词</span>，5维度WoW对比自动归因<span class="metric metric-cyan" data-count="273">273</span>个异动词并生成诊断看板</li>
+                  <li>知识沉淀：AI系统累计沉淀<span class="metric metric-cyan" data-count="2695">2695</span>条结构化知识chunk+<span class="metric metric-cyan" data-count="99">99</span>个可复用技能模块，运营经验首次实现组织级可复制</li>
+                  <li>框架验证：Hermes框架Demo通过——Agent间自动协商，<span class="metric metric-up" data-count="85">单任务端到端无人干预完成率达85%+</span></li>
                 </ul>
               </div>
             </div>
+            <button class="star-toggle-btn expanded" aria-label="Toggle details">
+              <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+              <span>收起详情</span>
+            </button>
           </div>
         </div>
 
@@ -747,32 +989,34 @@ body::before {
             <div class="star-item star-s">
               <span class="star-label">Situation</span>
               <div class="star-content">
-                盒马App搜索<span class="metric metric-cyan">日均成交金额4600W+</span>，搜索转化率37.5%，成交UV渗透率91-94%，搜索是盒马最大成交入口。搜索质量波动直接影响大盘GMV。
+                盒马App搜索<span class="metric metric-cyan" data-count="4600">日均成交金额4600W+</span>，搜索转化率37.5%，成交UV渗透率91-94%，搜索是盒马最大成交入口。搜索质量波动直接影响大盘GMV。
               </div>
             </div>
-            <div class="star-item star-t">
-              <span class="star-label">Task</span>
-              <div class="star-content">
-                建立搜索质量全链路监控体系与多维归因分析框架，数据驱动搜索策略优化。
+            <div class="star-collapsible">
+              <div class="star-item star-t">
+                <span class="star-label">Task</span>
+                <div class="star-content">
+                  建立搜索质量全链路监控体系与多维归因分析框架，数据驱动搜索策略优化。
+                </div>
               </div>
-            </div>
-            <div class="star-item star-a">
-              <span class="star-label">Action</span>
-              <div class="star-content">
-                <ul>
-                  <li><strong>异动监控体系</strong>：设计5维度自动监控策略——UV暴涨≥80%/暴跌≥40%/无结果率↑5pp达15%/UV价值↓30%/CVR↓5pp，日均扫描UV≥2000高量级词6371个，自动归因4类根因（召回失效/排序异常/节日退潮/新品上量）。</li>
-                  <li><strong>搜索漏斗治理</strong>：管理搜索大盘月度漏斗（激活UV→搜索UV→曝光UV→点击UV→加购UV→成交UV），日均153.7万单/笔单86元；推动无结果率从行业平均3-5%压降至<span class="metric metric-up">1.8%</span>。</li>
-                  <li><strong>品类转化归因</strong>：设计千次曝光效率指标体系（曝光渗透率/千次曝光点击/加购/成交/成交金额），覆盖10个一级通道+81个品类+6场景维度；十个圈货架CVR全线下跌5.8%~16.0%专项归因，定位快手菜/粮油品类被闪购替代为主因。</li>
-                  <li><strong>节日场景圈品</strong>：主导端午/世界杯等节日圈品策略，建立价格带模型（水果礼盒60-160元占93.6%GMV）+爆发系数诊断（v3_2模型，index 1.5-16.0），扫描1423 SKU发现41%弱爆发品（592个不在预测表）。</li>
-                  <li><strong>笔单价归因</strong>：搭建OKR核心指标笔单价（日均88元）5环闭环工作流（监测→归因→决策→执行→验证），通道×品类×SKU三层下钻，覆盖全品类部门周报/月报。</li>
-                </ul>
+              <div class="star-item star-a">
+                <span class="star-label">Action</span>
+                <div class="star-content">
+                  <ul>
+                    <li><strong>异动监控体系</strong>：设计5维度自动监控策略——UV暴涨≥80%/暴跌≥40%/无结果率↑5pp达15%/UV价值↓30%/CVR↓5pp，日均扫描UV≥2000高量级词6371个，自动归因4类根因（召回失效/排序异常/节日退潮/新品上量）。</li>
+                    <li><strong>搜索漏斗治理</strong>：管理搜索大盘月度漏斗（激活UV→搜索UV→曝光UV→点击UV→加购UV→成交UV），日均153.7万单/笔单86元；推动无结果率从行业平均3-5%压降至<span class="metric metric-up">1.8%</span>。</li>
+                    <li><strong>品类转化归因</strong>：设计千次曝光效率指标体系（曝光渗透率/千次曝光点击/加购/成交/成交金额），覆盖10个一级通道+81个品类+6场景维度；十个圈货架CVR全线下跌5.8%~16.0%专项归因，定位快手菜/粮油品类被闪购替代为主因。</li>
+                    <li><strong>节日场景圈品</strong>：主导端午/世界杯等节日圈品策略，建立价格带模型（水果礼盒60-160元占93.6%GMV）+爆发系数诊断（v3_2模型，index 1.5-16.0），扫描1423 SKU发现41%弱爆发品（592个不在预测表）。</li>
+                    <li><strong>笔单价归因</strong>：搭建OKR核心指标笔单价（日均88元）5环闭环工作流（监测→归因→决策→执行→验证），通道×品类×SKU三层下钻，覆盖全品类部门周报/月报。</li>
+                  </ul>
+                </div>
               </div>
             </div>
             <div class="star-item star-r">
               <span class="star-label">Result</span>
               <div class="star-content">
                 <ul>
-                  <li>搜索无结果率稳定控制<span class="metric metric-up">1.8%</span>（行业平均3-5%）；日均自动归因<span class="metric metric-up">273个异动词</span>输出诊断报告</li>
+                  <li>搜索无结果率稳定控制<span class="metric metric-up">1.8%</span>（行业平均3-5%）；日均自动归因<span class="metric metric-up" data-count="273">273个异动词</span>输出诊断报告</li>
                   <li>端午圈品41%弱爆发品推动替换后，圈品整体<span class="metric metric-up">爆发系数均值从2.1提升至4.8</span></li>
                   <li>今日疯抢频道CVR腰斩（0.137%→0.062%）根因定位后推动<span class="metric metric-orange">曝光预算收缩30-50%</span></li>
                   <li>笔单价归因体系支撑3个品类部门日常经营决策，千次曝光成交额成为品类效率评估标准工具</li>
@@ -780,6 +1024,10 @@ body::before {
                 </ul>
               </div>
             </div>
+            <button class="star-toggle-btn" aria-label="Toggle details">
+              <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+              <span>展开详情</span>
+            </button>
           </div>
         </div>
 
@@ -790,24 +1038,26 @@ body::before {
             <div class="star-item star-s">
               <span class="star-label">Situation</span>
               <div class="star-content">
-                盒马App搜索产品模块<span class="metric metric-cyan">100+需求</span>，涉及搜索激活页、底纹词、sug联想、搜索直达、图文分类、属性筛、问一问AI对话式搜索等。
+                盒马App搜索产品模块<span class="metric metric-cyan" data-count="100">100+需求</span>，涉及搜索激活页、底纹词、sug联想、搜索直达、图文分类、属性筛、问一问AI对话式搜索等。
               </div>
             </div>
-            <div class="star-item star-t">
-              <span class="star-label">Task</span>
-              <div class="star-content">
-                兼任搜索产品角色，负责需求管理、产品方案设计与效果评估体系搭建。
+            <div class="star-collapsible">
+              <div class="star-item star-t">
+                <span class="star-label">Task</span>
+                <div class="star-content">
+                  兼任搜索产品角色，负责需求管理、产品方案设计与效果评估体系搭建。
+                </div>
               </div>
-            </div>
-            <div class="star-item star-a">
-              <span class="star-label">Action</span>
-              <div class="star-content">
-                <ul>
-                  <li><strong>PRD管理</strong>：接管搜索产品PRD库（100+文档，语雀知识库），覆盖激活页/底纹词/sug/历史词/搜索直达/图文分类/属性筛全模块需求。</li>
-                  <li><strong>问一问AI搜索看板</strong>：主导设计8级漏斗体系（DAU→tab曝光→点击→进页→提问→多轮→IPV→加购→成交）+四维诊断（复访率/跳出率/对话深度/购买意图），支撑AI搜索增量价值评估。</li>
-                  <li><strong>搜索配置运营</strong>：主导同义词配置（已建标准SOP）、图文分类配置、类目预测纠偏等搜索运营后台日常操作，管理4人搜索运营小组。</li>
-                  <li><strong>搜索白盒诊断</strong>：推动wdk-wbox专家模式+trace/query接口在日常排查中应用，实现per-item评分（baseScore/ctr/cvr/ltr）+召回链路+同义词命中可视化诊断。</li>
-                </ul>
+              <div class="star-item star-a">
+                <span class="star-label">Action</span>
+                <div class="star-content">
+                  <ul>
+                    <li><strong>PRD管理</strong>：接管搜索产品PRD库（100+文档，语雀知识库），覆盖激活页/底纹词/sug/历史词/搜索直达/图文分类/属性筛全模块需求。</li>
+                    <li><strong>问一问AI搜索看板</strong>：主导设计8级漏斗体系（DAU→tab曝光→点击→进页→提问→多轮→IPV→加购→成交）+四维诊断（复访率/跳出率/对话深度/购买意图），支撑AI搜索增量价值评估。</li>
+                    <li><strong>搜索配置运营</strong>：主导同义词配置（已建标准SOP）、图文分类配置、类目预测纠偏等搜索运营后台日常操作，管理4人搜索运营小组。</li>
+                    <li><strong>搜索白盒诊断</strong>：推动wdk-wbox专家模式+trace/query接口在日常排查中应用，实现per-item评分（baseScore/ctr/cvr/ltr）+召回链路+同义词命中可视化诊断。</li>
+                  </ul>
+                </div>
               </div>
             </div>
             <div class="star-item star-r">
@@ -820,12 +1070,16 @@ body::before {
                 </ul>
               </div>
             </div>
+            <button class="star-toggle-btn" aria-label="Toggle details">
+              <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+              <span>展开详情</span>
+            </button>
           </div>
         </div>
       </div>
 
       <!-- Baidu -->
-      <div class="timeline-item">
+      <div class="timeline-item" data-company="baidu">
         <div class="timeline-dot"></div>
         <div class="job-header">
           <h3 class="job-title">搜索产品</h3>
@@ -846,20 +1100,26 @@ body::before {
                 百度地图搜索业务需对外承接多个主机车商合作（岚图、比亚迪、一汽、奥迪等），车厂侧反馈复杂query（如问山问水等自然语言查询）无结果/不相关问题突出，影响合作体验与续约。
               </div>
             </div>
-            <div class="star-item star-t">
-              <span class="star-label">Task</span>
-              <div class="star-content">负责百度地图搜索能力对外输出，建立可持续的检索质量优化机制。</div>
-            </div>
-            <div class="star-item star-a">
-              <span class="star-label">Action</span>
-              <div class="star-content">建立数据飞轮机制——车厂&外部无点query定期流转至检索内部消化为内部需求，针对复杂query场景（自然语言查询/模糊地点描述等）设计专项优化策略。</div>
+            <div class="star-collapsible">
+              <div class="star-item star-t">
+                <span class="star-label">Task</span>
+                <div class="star-content">负责百度地图搜索能力对外输出，建立可持续的检索质量优化机制。</div>
+              </div>
+              <div class="star-item star-a">
+                <span class="star-label">Action</span>
+                <div class="star-content">建立数据飞轮机制——车厂&外部无点query定期流转至检索内部消化为内部需求，针对复杂query场景（自然语言查询/模糊地点描述等）设计专项优化策略。</div>
+              </div>
             </div>
             <div class="star-item star-r">
               <span class="star-label">Result</span>
               <div class="star-content">
-                针对复杂query的<span class="metric metric-up">无结果率降低约70%</span>；问山问水等特殊场景<span class="metric metric-up">无结果/不相关率降低90%</span>。
+                针对复杂query的<span class="metric metric-up" data-count="70">无结果率降低约70%</span>；问山问水等特殊场景<span class="metric metric-up" data-count="90">无结果/不相关率降低90%</span>。
               </div>
             </div>
+            <button class="star-toggle-btn" aria-label="Toggle details">
+              <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+              <span>展开详情</span>
+            </button>
           </div>
         </div>
 
@@ -873,33 +1133,39 @@ body::before {
                 百度地图基础检索存在WW问题、粗排混乱、连锁POI漏召等体验问题，商业化虚拟点位插入较乱影响自然结果体验。
               </div>
             </div>
-            <div class="star-item star-t">
-              <span class="star-label">Task</span>
-              <div class="star-content">系统性优化百度地图基础检索的召回与排序策略，平衡用户体验与商业化收益。</div>
-            </div>
-            <div class="star-item star-a">
-              <span class="star-label">Action</span>
-              <div class="star-content">
-                <ul>
-                  <li>基础检索策略提升：解决WW问题与粗排混乱，优化sug和直搜主需求排序逻辑；连锁query场景优化POI召回。</li>
-                  <li>自动测评大模型0-1打磨：通过大模型快速找到精搜/泛搜/笔记检索等无点原因，建立自动化质量评测体系。</li>
-                  <li>商搜融合：针对地图商业化混乱、虚拟点位插入较乱的现象进行治理，优化商业化混排策略。</li>
-                  <li>连锁策略优化：和POI数据对连锁点位进行分级（通过人均价、评价、POI本身标签属性等），优化连锁召回/排序策略。</li>
-                </ul>
+            <div class="star-collapsible">
+              <div class="star-item star-t">
+                <span class="star-label">Task</span>
+                <div class="star-content">系统性优化百度地图基础检索的召回与排序策略，平衡用户体验与商业化收益。</div>
+              </div>
+              <div class="star-item star-a">
+                <span class="star-label">Action</span>
+                <div class="star-content">
+                  <ul>
+                    <li>基础检索策略提升：解决WW问题与粗排混乱，优化sug和直搜主需求排序逻辑；连锁query场景优化POI召回。</li>
+                    <li>自动测评大模型0-1打磨：通过大模型快速找到精搜/泛搜/笔记检索等无点原因，建立自动化质量评测体系。</li>
+                    <li>商搜融合：针对地图商业化混乱、虚拟点位插入较乱的现象进行治理，优化商业化混排策略。</li>
+                    <li>连锁策略优化：和POI数据对连锁点位进行分级（通过人均价、评价、POI本身标签属性等），优化连锁召回/排序策略。</li>
+                  </ul>
+                </div>
               </div>
             </div>
             <div class="star-item star-r">
               <span class="star-label">Result</span>
               <div class="star-content">
                 <ul>
-                  <li>sug主需求不在首位率<span class="metric metric-up">降低20%</span>，直搜主需求不在首位率<span class="metric metric-up">降低20%</span></li>
-                  <li>连锁query POI漏召率<span class="metric metric-up">降低10%</span>，连锁query点击pv<span class="metric metric-up">提升3%</span>，整体点击率<span class="metric metric-up">提升1.3%</span></li>
-                  <li>自动测评大模型准确率约<span class="metric metric-cyan">87%</span></li>
+                  <li>sug主需求不在首位率<span class="metric metric-up" data-count="20">降低20%</span>，直搜主需求不在首位率<span class="metric metric-up" data-count="20">降低20%</span></li>
+                  <li>连锁query POI漏召率<span class="metric metric-up" data-count="10">降低10%</span>，连锁query点击pv<span class="metric metric-up">提升3%</span>，整体点击率<span class="metric metric-up">提升1.3%</span></li>
+                  <li>自动测评大模型准确率约<span class="metric metric-cyan" data-count="87">87%</span></li>
                   <li>在商业化点位总曝光不变的情况下提升进入商搜通路的<span class="metric metric-up">检索ctr 5%</span></li>
                   <li>连锁通路ctr<span class="metric metric-up">提升约2%</span></li>
                 </ul>
               </div>
             </div>
+            <button class="star-toggle-btn" aria-label="Toggle details">
+              <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+              <span>展开详情</span>
+            </button>
           </div>
         </div>
 
@@ -911,20 +1177,26 @@ body::before {
               <span class="star-label">Situation</span>
               <div class="star-content">百度地图AI检索需接入百度大搜生态，地图场景的AI搜索承接率低，用户泛搜需求未被有效满足。</div>
             </div>
-            <div class="star-item star-t">
-              <span class="star-label">Task</span>
-              <div class="star-content">定义AI搜索分流策略，提升地图AI搜索的承接率和满足度。</div>
-            </div>
-            <div class="star-item star-a">
-              <span class="star-label">Action</span>
-              <div class="star-content">定义分流大搜的行业&场景，明确地图场景AI搜索的边界与分流规则，提升AI搜索的承接率。</div>
+            <div class="star-collapsible">
+              <div class="star-item star-t">
+                <span class="star-label">Task</span>
+                <div class="star-content">定义AI搜索分流策略，提升地图AI搜索的承接率和满足度。</div>
+              </div>
+              <div class="star-item star-a">
+                <span class="star-label">Action</span>
+                <div class="star-content">定义分流大搜的行业&场景，明确地图场景AI搜索的边界与分流规则，提升AI搜索的承接率。</div>
+              </div>
             </div>
             <div class="star-item star-r">
               <span class="star-label">Result</span>
               <div class="star-content">
-                接入后提升<span class="metric metric-up">AI搜索前三位点击率7%</span>；上线后泛搜PV<span class="metric metric-up">日均提升约3W</span>；agent前五位满足度<span class="metric metric-up">提升约2%</span>。
+                接入后提升<span class="metric metric-up">AI搜索前三位点击率7%</span>；上线后泛搜PV<span class="metric metric-up" data-count="30000">日均提升约3W</span>；agent前五位满足度<span class="metric metric-up">提升约2%</span>。
               </div>
             </div>
+            <button class="star-toggle-btn" aria-label="Toggle details">
+              <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+              <span>展开详情</span>
+            </button>
           </div>
         </div>
 
@@ -936,26 +1208,32 @@ body::before {
               <span class="star-label">Situation</span>
               <div class="star-content">百度地图空框场景（用户打开搜索但未输入）缺乏有效的流量激活手段，用户流失率高。</div>
             </div>
-            <div class="star-item star-t">
-              <span class="star-label">Task</span>
-              <div class="star-content">设计空框推荐词策略，激活空框场景流量。</div>
-            </div>
-            <div class="star-item star-a">
-              <span class="star-label">Action</span>
-              <div class="star-content">设计多层级的推荐词策略（实时热点+节假日推荐+行为匹配等），根据用户画像和时空信息动态推荐。</div>
+            <div class="star-collapsible">
+              <div class="star-item star-t">
+                <span class="star-label">Task</span>
+                <div class="star-content">设计空框推荐词策略，激活空框场景流量。</div>
+              </div>
+              <div class="star-item star-a">
+                <span class="star-label">Action</span>
+                <div class="star-content">设计多层级的推荐词策略（实时热点+节假日推荐+行为匹配等），根据用户画像和时空信息动态推荐。</div>
+              </div>
             </div>
             <div class="star-item star-r">
               <span class="star-label">Result</span>
               <div class="star-content">
-                带来检索<span class="metric metric-up">日均pv提升约9W</span>；点击率约为0.2%，优于地图内部笔记推荐和PUSH推送。
+                带来检索<span class="metric metric-up" data-count="90000">日均pv提升约9W</span>；点击率约为0.2%，优于地图内部笔记推荐和PUSH推送。
               </div>
             </div>
+            <button class="star-toggle-btn" aria-label="Toggle details">
+              <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+              <span>展开详情</span>
+            </button>
           </div>
         </div>
       </div>
 
       <!-- Didi -->
-      <div class="timeline-item" id="sec-strategy-ops">
+      <div class="timeline-item" id="sec-strategy-ops" data-company="didi">
         <div class="timeline-dot"></div>
         <div class="job-header">
           <h3 class="job-title">策略产品运营专家</h3>
@@ -974,21 +1252,23 @@ body::before {
               <span class="star-label">Situation</span>
               <div class="star-content">电单车点位建设依赖人工经验，缺乏系统化评估标准和自动化推荐能力，无法充分挖掘用户的用还车需求。</div>
             </div>
-            <div class="star-item star-t">
-              <span class="star-label">Task</span>
-              <div class="star-content">建立增删一体的自动化点位建立体系，实现数据驱动的点位全生命周期管理。</div>
-            </div>
-            <div class="star-item star-a">
-              <span class="star-label">Action</span>
-              <div class="star-content">
-                <ul>
-                  <li>主导并建立多维度的点位考核指标——人流量覆盖率（通过网约车数据等多渠道数据为抓手）。</li>
-                  <li>针对样本城市进行增点策略的训练，建立不同的增点城市模型。</li>
-                  <li>确立删点标准，保障城市点位的稳定可靠。</li>
-                  <li>从点位出发，对城市运营区、运维网格等进行了详细的梳理。</li>
-                  <li>抽象不同城市运营情况，进行点位维度的城市分层（算法动态分层）。</li>
-                  <li>点位推荐产品配置能力建设。</li>
-                </ul>
+            <div class="star-collapsible">
+              <div class="star-item star-t">
+                <span class="star-label">Task</span>
+                <div class="star-content">建立增删一体的自动化点位建立体系，实现数据驱动的点位全生命周期管理。</div>
+              </div>
+              <div class="star-item star-a">
+                <span class="star-label">Action</span>
+                <div class="star-content">
+                  <ul>
+                    <li>主导并建立多维度的点位考核指标——人流量覆盖率（通过网约车数据等多渠道数据为抓手）。</li>
+                    <li>针对样本城市进行增点策略的训练，建立不同的增点城市模型。</li>
+                    <li>确立删点标准，保障城市点位的稳定可靠。</li>
+                    <li>从点位出发，对城市运营区、运维网格等进行了详细的梳理。</li>
+                    <li>抽象不同城市运营情况，进行点位维度的城市分层（算法动态分层）。</li>
+                    <li>点位推荐产品配置能力建设。</li>
+                  </ul>
+                </div>
               </div>
             </div>
             <div class="star-item star-r">
@@ -996,13 +1276,17 @@ body::before {
               <div class="star-content">
                 <ul>
                   <li>人流量覆盖率<span class="metric metric-up">提升10pp</span>，车均单<span class="metric metric-up">提升0.3单</span></li>
-                  <li>新策略推荐的点位7d激活率为<span class="metric metric-up">75%</span>，7d发单6+单，高于大盘3+单</li>
-                  <li>管理区域（政策）区域面积<span class="metric metric-up">减少了20%</span></li>
-                  <li>在点位数量保持稳定不变的情况下<span class="metric metric-up">单点比提升10%</span></li>
-                  <li>点位推荐平台<span class="metric metric-cyan">月均自动化推荐3W+点位</span>，覆盖率全国</li>
+                  <li>新策略推荐的点位7d激活率为<span class="metric metric-up" data-count="75">75%</span>，7d发单6+单，高于大盘3+单</li>
+                  <li>管理区域（政策）区域面积<span class="metric metric-up" data-count="20">减少了20%</span></li>
+                  <li>在点位数量保持稳定不变的情况下<span class="metric metric-up" data-count="10">单点比提升10%</span></li>
+                  <li>点位推荐平台<span class="metric metric-cyan" data-count="30000">月均自动化推荐3W+点位</span>，覆盖率全国</li>
                 </ul>
               </div>
             </div>
+            <button class="star-toggle-btn" aria-label="Toggle details">
+              <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+              <span>展开详情</span>
+            </button>
           </div>
         </div>
 
@@ -1014,17 +1298,19 @@ body::before {
               <span class="star-label">Situation</span>
               <div class="star-content">用户还车拦截率高（20m内及50m以上场景均存在不合理拦截），影响骑行体验和完单率，还车流程归因不清。</div>
             </div>
-            <div class="star-item star-t">
-              <span class="star-label">Task</span>
-              <div class="star-content">降低不合理还车拦截，优化还车流程体验。</div>
-            </div>
-            <div class="star-item star-a">
-              <span class="star-label">Action</span>
-              <div class="star-content">
-                <ul>
-                  <li>针对场景化的还车拦截场景进行优化——对附近有车场景，挖掘并上线了附近有车即可还功能；对50m以上拦截场景，形成了基于还车拦截热区网格增点的策略。</li>
-                  <li>还车流程优化：对还车流程、撤点宣教等流程链路做了优化。</li>
-                </ul>
+            <div class="star-collapsible">
+              <div class="star-item star-t">
+                <span class="star-label">Task</span>
+                <div class="star-content">降低不合理还车拦截，优化还车流程体验。</div>
+              </div>
+              <div class="star-item star-a">
+                <span class="star-label">Action</span>
+                <div class="star-content">
+                  <ul>
+                    <li>针对场景化的还车拦截场景进行优化——对附近有车场景，挖掘并上线了附近有车即可还功能；对50m以上拦截场景，形成了基于还车拦截热区网格增点的策略。</li>
+                    <li>还车流程优化：对还车流程、撤点宣教等流程链路做了优化。</li>
+                  </ul>
+                </div>
               </div>
             </div>
             <div class="star-item star-r">
@@ -1037,6 +1323,10 @@ body::before {
                 </ul>
               </div>
             </div>
+            <button class="star-toggle-btn" aria-label="Toggle details">
+              <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+              <span>展开详情</span>
+            </button>
           </div>
         </div>
 
@@ -1048,37 +1338,43 @@ body::before {
               <span class="star-label">Situation</span>
               <div class="star-content">业务侧缺乏可视化数据工具支撑决策，政策合规场景下需要灵活的点位管理工具。</div>
             </div>
-            <div class="star-item star-t">
-              <span class="star-label">Task</span>
-              <div class="star-content">搭建数据工具与新型点位能力，在政策合规前提下实现业务增长。</div>
-            </div>
-            <div class="star-item star-a">
-              <span class="star-label">Action</span>
-              <div class="star-content">
-                <ul>
-                  <li>基于数据体系建立热力图等工具。</li>
-                  <li>打造新型点位工具：可投禁还点（开通21城，累计300+点位）；隐藏点位（累计通过800+）。</li>
-                  <li>基于业务属性，完善点位的策略属性字段，丰富点位容量、点位垂边冗余值等新式点位属性策略，为调度等业务提供保障。</li>
-                </ul>
+            <div class="star-collapsible">
+              <div class="star-item star-t">
+                <span class="star-label">Task</span>
+                <div class="star-content">搭建数据工具与新型点位能力，在政策合规前提下实现业务增长。</div>
+              </div>
+              <div class="star-item star-a">
+                <span class="star-label">Action</span>
+                <div class="star-content">
+                  <ul>
+                    <li>基于数据体系建立热力图等工具。</li>
+                    <li>打造新型点位工具：可投禁还点（开通21城，累计300+点位）；隐藏点位（累计通过800+）。</li>
+                    <li>基于业务属性，完善点位的策略属性字段，丰富点位容量、点位垂边冗余值等新式点位属性策略，为调度等业务提供保障。</li>
+                  </ul>
+                </div>
               </div>
             </div>
             <div class="star-item star-r">
               <span class="star-label">Result</span>
               <div class="star-content">
                 <ul>
-                  <li>热力图工具<span class="metric metric-cyan">日均访问量200+</span></li>
-                  <li>可投禁还点平均点位<span class="metric metric-up">发单16+单</span></li>
-                  <li>隐藏点位平均点位<span class="metric metric-up">完单7+单</span></li>
+                  <li>热力图工具<span class="metric metric-cyan" data-count="200">日均访问量200+</span></li>
+                  <li>可投禁还点平均点位<span class="metric metric-up" data-count="16">发单16+单</span></li>
+                  <li>隐藏点位平均点位<span class="metric metric-up" data-count="7">完单7+单</span></li>
                   <li>保障在政策合规的前提下实现业务增长</li>
                 </ul>
               </div>
             </div>
+            <button class="star-toggle-btn" aria-label="Toggle details">
+              <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+              <span>展开详情</span>
+            </button>
           </div>
         </div>
       </div>
 
       <!-- Yonghui -->
-      <div class="timeline-item" id="sec-digital">
+      <div class="timeline-item" id="sec-digital" data-company="yonghui">
         <div class="timeline-dot"></div>
         <div class="job-header">
           <h3 class="job-title">产品架构师</h3>
@@ -1097,20 +1393,26 @@ body::before {
               <span class="star-label">Situation</span>
               <div class="star-content">永辉线上搜索推荐能力薄弱，新用户冷启动、搜索badcase等问题突出。</div>
             </div>
-            <div class="star-item star-t">
-              <span class="star-label">Task</span>
-              <div class="star-content">从0到1搭建个性化推荐与搜索质量体系。</div>
-            </div>
-            <div class="star-item star-a">
-              <span class="star-label">Action</span>
-              <div class="star-content">设计新人个性化推荐（最近相邻模型+新商品召回链路）；定义爆品标签模型并融入feed流权重；新增"附近热搜"中间楼层；系统性治理搜索召回badcase（100 query抽检发现42个问题）。</div>
+            <div class="star-collapsible">
+              <div class="star-item star-t">
+                <span class="star-label">Task</span>
+                <div class="star-content">从0到1搭建个性化推荐与搜索质量体系。</div>
+              </div>
+              <div class="star-item star-a">
+                <span class="star-label">Action</span>
+                <div class="star-content">设计新人个性化推荐（最近相邻模型+新商品召回链路）；定义爆品标签模型并融入feed流权重；新增"附近热搜"中间楼层；系统性治理搜索召回badcase（100 query抽检发现42个问题）。</div>
+              </div>
             </div>
             <div class="star-item star-r">
               <span class="star-label">Result</span>
               <div class="star-content">
-                新用户UV支付转化率<span class="metric metric-up">提升17%</span>，客单价<span class="metric metric-up">提升10元</span>；爆品CTR较普通推荐<span class="metric metric-up">提升30%</span>；搜索ipv-uv/搜索uv<span class="metric metric-up">提升10%</span>，千次搜索下单金额<span class="metric metric-up">提升6%</span>。
+                新用户UV支付转化率<span class="metric metric-up" data-count="17">提升17%</span>，客单价<span class="metric metric-up">提升10元</span>；爆品CTR较普通推荐<span class="metric metric-up" data-count="30">提升30%</span>；搜索ipv-uv/搜索uv<span class="metric metric-up" data-count="10">提升10%</span>，千次搜索下单金额<span class="metric metric-up">提升6%</span>。
               </div>
             </div>
+            <button class="star-toggle-btn" aria-label="Toggle details">
+              <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+              <span>展开详情</span>
+            </button>
           </div>
         </div>
 
@@ -1122,20 +1424,26 @@ body::before {
               <span class="star-label">Situation</span>
               <div class="star-content">永辉物流供货率低、库存周转慢、门店收货人力投入大。</div>
             </div>
-            <div class="star-item star-t">
-              <span class="star-label">Task</span>
-              <div class="star-content">打通物流全链路数字化，提升供货效率并降本。</div>
-            </div>
-            <div class="star-item star-a">
-              <span class="star-label">Action</span>
-              <div class="star-content">挖掘托盘码需求实现按托盘单位拣货/卸货/前置验货；打通采购中台、物流OTB、店端WMS系统；打造库房中转辅助报表。</div>
+            <div class="star-collapsible">
+              <div class="star-item star-t">
+                <span class="star-label">Task</span>
+                <div class="star-content">打通物流全链路数字化，提升供货效率并降本。</div>
+              </div>
+              <div class="star-item star-a">
+                <span class="star-label">Action</span>
+                <div class="star-content">挖掘托盘码需求实现按托盘单位拣货/卸货/前置验货；打通采购中台、物流OTB、店端WMS系统；打造库房中转辅助报表。</div>
+              </div>
             </div>
             <div class="star-item star-r">
               <span class="star-label">Result</span>
               <div class="star-content">
-                中心仓供货率提升并稳定在<span class="metric metric-up">92%</span>；自营商品库存周转率从40+天降至<span class="metric metric-up">22天</span>；优化门店收货人员约<span class="metric metric-up">1000人</span>。
+                中心仓供货率提升并稳定在<span class="metric metric-up" data-count="92">92%</span>；自营商品库存周转率从40+天降至<span class="metric metric-up" data-count="22">22天</span>；优化门店收货人员约<span class="metric metric-up" data-count="1000">1000人</span>。
               </div>
             </div>
+            <button class="star-toggle-btn" aria-label="Toggle details">
+              <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+              <span>展开详情</span>
+            </button>
           </div>
         </div>
 
@@ -1150,7 +1458,7 @@ body::before {
             <div class="star-item star-r">
               <span class="star-label">Result</span>
               <div class="star-content">
-                订单履约率从85-90%提升至<span class="metric metric-up">95-98%</span>；骑手每小时派送单量<span class="metric metric-up">上涨30%</span>；优化福建/四川/重庆客服人员约<span class="metric metric-up">300人</span>。
+                订单履约率从85-90%提升至<span class="metric metric-up">95-98%</span>；骑手每小时派送单量<span class="metric metric-up" data-count="30">上涨30%</span>；优化福建/四川/重庆客服人员约<span class="metric metric-up" data-count="300">300人</span>。
               </div>
             </div>
           </div>
@@ -1158,7 +1466,7 @@ body::before {
       </div>
 
       <!-- JD -->
-      <div class="timeline-item">
+      <div class="timeline-item" data-company="jd">
         <div class="timeline-dot"></div>
         <div class="job-header">
           <h3 class="job-title">产品经理</h3>
@@ -1188,11 +1496,11 @@ body::before {
               <span class="star-label">Result</span>
               <div class="star-content">
                 <ul>
-                  <li>京喜：用户量月提升30%情况下<span class="metric metric-up">客均单量提升50%</span></li>
-                  <li>用户引擎：A/B测试<span class="metric metric-up">半月存留高出对照组60%</span></li>
-                  <li>DevSecOps：工信部排查整改时间<span class="metric metric-up">降低90%以上</span>，成为公司强制接入平台</li>
-                  <li>直播：直播购买率<span class="metric metric-up">提升30%</span>，直播GMV<span class="metric metric-up">提升50%</span></li>
-                  <li>数字人客服：<span class="metric metric-up">节省60%客服投入</span></li>
+                  <li>京喜：用户量月提升30%情况下<span class="metric metric-up" data-count="50">客均单量提升50%</span></li>
+                  <li>用户引擎：A/B测试<span class="metric metric-up" data-count="60">半月存留高出对照组60%</span></li>
+                  <li>DevSecOps：工信部排查整改时间<span class="metric metric-up" data-count="90">降低90%以上</span>，成为公司强制接入平台</li>
+                  <li>直播：直播购买率<span class="metric metric-up" data-count="30">提升30%</span>，直播GMV<span class="metric metric-up" data-count="50">提升50%</span></li>
+                  <li>数字人客服：<span class="metric metric-up" data-count="60">节省60%客服投入</span></li>
                 </ul>
               </div>
             </div>
@@ -1226,67 +1534,243 @@ body::before {
 
 </div><!-- end container -->
 
+<!-- Back to Top Button -->
+<button class="back-to-top" id="backToTop" aria-label="Back to top">
+  <svg viewBox="0 0 24 24"><path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/></svg>
+</button>
+
 <script>
 (function() {
   'use strict';
 
-  // Intersection Observer for fade-in animations
-  const sections = document.querySelectorAll('.section');
-  const fadeObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-      }
-    });
-  }, { threshold: 0.08, rootMargin: '0px 0px -50px 0px' });
+  // === Scroll Progress Bar ===
+  const scrollProgress = document.getElementById('scrollProgress');
+  function updateScrollProgress() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    scrollProgress.style.width = progress + '%';
+  }
 
-  sections.forEach(sec => fadeObserver.observe(sec));
+  // === Back to Top Button ===
+  const backToTop = document.getElementById('backToTop');
+  const heroSection = document.querySelector('.hero');
 
-  // Sticky nav scroll shadow
+  function updateBackToTop() {
+    const heroBottom = heroSection.getBoundingClientRect().bottom;
+    if (heroBottom < 0) {
+      backToTop.classList.add('visible');
+    } else {
+      backToTop.classList.remove('visible');
+    }
+  }
+
+  backToTop.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // === Nav bar scroll shadow ===
   const navBar = document.getElementById('navBar');
-  window.addEventListener('scroll', () => {
+  function updateNavShadow() {
     if (window.scrollY > 50) {
       navBar.classList.add('scrolled');
     } else {
       navBar.classList.remove('scrolled');
     }
+  }
+
+  // Combined scroll handler for performance
+  let ticking = false;
+  window.addEventListener('scroll', function() {
+    if (!ticking) {
+      requestAnimationFrame(function() {
+        updateScrollProgress();
+        updateBackToTop();
+        updateNavShadow();
+        ticking = false;
+      });
+      ticking = true;
+    }
   });
 
-  // Tag navigation - click to scroll
+  // === Nav Tags Scroll Indicator (fade edges) ===
+  const navTagsWrapper = document.getElementById('navTagsWrapper');
+  const navTags = document.getElementById('navTags');
+
+  function updateNavScrollIndicator() {
+    const scrollLeft = navTags.scrollLeft;
+    const maxScroll = navTags.scrollWidth - navTags.clientWidth;
+
+    if (scrollLeft > 10) {
+      navTagsWrapper.classList.add('scroll-left');
+    } else {
+      navTagsWrapper.classList.remove('scroll-left');
+    }
+
+    if (scrollLeft < maxScroll - 10) {
+      navTagsWrapper.classList.add('scroll-right');
+    } else {
+      navTagsWrapper.classList.remove('scroll-right');
+    }
+  }
+
+  navTags.addEventListener('scroll', updateNavScrollIndicator);
+  window.addEventListener('resize', updateNavScrollIndicator);
+  // Initial check
+  setTimeout(updateNavScrollIndicator, 100);
+
+  // === Tag Navigation - click to scroll ===
   const tags = document.querySelectorAll('.nav-tag');
-  tags.forEach(tag => {
-    tag.addEventListener('click', () => {
-      const targetId = tag.getAttribute('data-target');
-      const target = document.getElementById(targetId);
+  tags.forEach(function(tag) {
+    tag.addEventListener('click', function() {
+      var targetId = tag.getAttribute('data-target');
+      var target = document.getElementById(targetId);
       if (target) {
         target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     });
   });
 
-  // Intersection Observer for active tag tracking
+  // === Active tag tracking ===
   const tagTargets = [];
-  tags.forEach(tag => {
-    const targetId = tag.getAttribute('data-target');
-    const el = document.getElementById(targetId);
-    if (el) tagTargets.push({ tag, el });
+  tags.forEach(function(tag) {
+    var targetId = tag.getAttribute('data-target');
+    var el = document.getElementById(targetId);
+    if (el) tagTargets.push({ tag: tag, el: el });
   });
 
-  const tagObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
+  var tagObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
       if (entry.isIntersecting) {
-        const matchedTag = tagTargets.find(t => t.el === entry.target);
+        var matchedTag = tagTargets.find(function(t) { return t.el === entry.target; });
         if (matchedTag) {
-          tags.forEach(t => t.classList.remove('active'));
+          tags.forEach(function(t) { t.classList.remove('active'); });
           matchedTag.tag.classList.add('active');
-          // Scroll tag into view in nav
           matchedTag.tag.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         }
       }
     });
   }, { threshold: 0.3, rootMargin: '-80px 0px -50% 0px' });
 
-  tagTargets.forEach(t => tagObserver.observe(t.el));
+  tagTargets.forEach(function(t) { tagObserver.observe(t.el); });
+
+  // === Timeline item active tracking ===
+  var timelineItems = document.querySelectorAll('.timeline-item');
+  var timelineObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('active');
+      } else {
+        entry.target.classList.remove('active');
+      }
+    });
+  }, { threshold: 0.2, rootMargin: '-100px 0px -40% 0px' });
+
+  timelineItems.forEach(function(item) { timelineObserver.observe(item); });
+
+  // === Section fade-in (progressive enhancement) ===
+  var sections = document.querySelectorAll('.section');
+  sections.forEach(function(sec) {
+    sec.classList.add('animate-in');
+  });
+
+  var sectionObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -50px 0px' });
+
+  sections.forEach(function(sec) { sectionObserver.observe(sec); });
+
+  // === Collapsible STAR Sections ===
+  var starGroups = document.querySelectorAll('.star-group');
+  starGroups.forEach(function(group) {
+    var collapsible = group.querySelector('.star-collapsible');
+    var toggleBtn = group.querySelector('.star-toggle-btn');
+
+    if (!collapsible || !toggleBtn) return;
+
+    var isDefaultExpanded = group.getAttribute('data-expanded-default') === 'true';
+
+    if (!isDefaultExpanded) {
+      // Collapsed by default - collapsible starts without .expanded class
+      collapsible.classList.remove('expanded');
+      toggleBtn.classList.remove('expanded');
+      toggleBtn.querySelector('span').textContent = '展开详情';
+    }
+
+    toggleBtn.addEventListener('click', function() {
+      var isExpanded = collapsible.classList.contains('expanded');
+      if (isExpanded) {
+        collapsible.classList.remove('expanded');
+        toggleBtn.classList.remove('expanded');
+        toggleBtn.querySelector('span').textContent = '展开详情';
+      } else {
+        collapsible.classList.add('expanded');
+        toggleBtn.classList.add('expanded');
+        toggleBtn.querySelector('span').textContent = '收起详情';
+      }
+    });
+  });
+
+  // === Metric Counter Animation ===
+  var metrics = document.querySelectorAll('.metric[data-count]');
+  var countedMetrics = new Set();
+
+  function animateCount(el) {
+    var target = parseInt(el.getAttribute('data-count'), 10);
+    if (isNaN(target) || target === 0) return;
+
+    var originalText = el.textContent;
+    var duration = 1500;
+    var startTime = null;
+
+    // Extract the number from the text to know what to replace
+    var numMatch = originalText.match(/\d+/);
+    if (!numMatch) return;
+    var numStr = numMatch[0];
+    var prefix = originalText.substring(0, originalText.indexOf(numStr));
+    var suffix = originalText.substring(originalText.indexOf(numStr) + numStr.length);
+
+    function easeOutQuart(t) {
+      return 1 - Math.pow(1 - t, 4);
+    }
+
+    function step(timestamp) {
+      if (!startTime) startTime = timestamp;
+      var elapsed = timestamp - startTime;
+      var progress = Math.min(elapsed / duration, 1);
+      var easedProgress = easeOutQuart(progress);
+      var current = Math.round(easedProgress * target);
+      el.textContent = prefix + current + suffix;
+
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      } else {
+        el.textContent = originalText;
+      }
+    }
+
+    requestAnimationFrame(step);
+  }
+
+  var metricObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting && !countedMetrics.has(entry.target)) {
+        countedMetrics.add(entry.target);
+        animateCount(entry.target);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  metrics.forEach(function(m) { metricObserver.observe(m); });
+
+  // === Initial state ===
+  updateScrollProgress();
+  updateBackToTop();
+  updateNavShadow();
 
 })();
 </script>
