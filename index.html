@@ -911,6 +911,22 @@ body::before {
 
 /* Print Styles */
 @media print {
+  /* Dark-theme palette remap for white paper: fixes faint text everywhere at once */
+  :root {
+    --bg: #ffffff;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f7f7f9;
+    --text: #1a1a1a;
+    --text-dim: #333333;
+    --text-muted: #555555;
+    --border: #dddddd;
+    --cyan: #0e7490;
+    --blue: #1d4ed8;
+    --indigo: #4338ca;
+    --orange: #c2410c;
+    --green: #15803d;
+    --rose: #be123c;
+  }
   body {
     background: #fff !important;
     color: #1a1a1a !important;
@@ -925,7 +941,7 @@ body::before {
   .hero-subtitle { color: #333 !important; }
   .container { max-width: 100%; }
   .section { opacity: 1 !important; transform: none !important; padding: 20px 0; }
-  .star-group { border: 1px solid #ddd; }
+  .star-group { border: 1px solid #ddd; background: #fff !important; }
   .star-item { background: #fafafa !important; }
   .star-label { border: 1px solid currentColor; }
   .star-collapsible { max-height: none !important; opacity: 1 !important; }
@@ -943,7 +959,11 @@ body::before {
   .timeline-item { break-inside: auto; page-break-inside: auto; }
   .role-block { break-inside: auto; page-break-inside: auto; }
   .star-group { break-inside: auto; page-break-inside: auto; }
-  .star-item { break-inside: auto; page-break-inside: auto; }
+  /* Short STAR blocks (S/T/R) must never be split; only the long ACTION block may flow */
+  .star-item { break-inside: avoid; page-break-inside: avoid; }
+  .star-item.star-a { break-inside: auto; page-break-inside: auto; }
+  .star-label { break-after: avoid; page-break-after: avoid; }
+  .star-content { orphans: 3; widows: 3; }
   .ai-overview { break-inside: auto; page-break-inside: auto; }
   .stat-grid { break-inside: avoid; page-break-inside: avoid; }
   .stat-card { break-inside: avoid; page-break-inside: avoid; }
@@ -957,6 +977,7 @@ body::before {
   .job-summary { break-inside: avoid; page-break-inside: avoid; }
   .edu-card, .bottom-card { break-inside: avoid; page-break-inside: avoid; }
   .section-title { break-after: avoid; page-break-after: avoid; }
+}
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
