@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>雷鹏 - AI & Search Operations Expert</title>
+<title>雷鹏 - AI × 搜索 · 产品与运营专家</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
 
@@ -939,7 +939,24 @@ body::before {
   .edu-card, .bottom-card { background: #f9f9f9 !important; border-color: #ddd !important; }
   .hero { padding: 40px 0 20px; }
   a { color: #0066cc !important; }
-}
+  /* Prevent SMALL atomic units from being cut; let tall containers break naturally */
+  .timeline-item { break-inside: auto; page-break-inside: auto; }
+  .role-block { break-inside: auto; page-break-inside: auto; }
+  .star-group { break-inside: auto; page-break-inside: auto; }
+  .star-item { break-inside: auto; page-break-inside: auto; }
+  .ai-overview { break-inside: auto; page-break-inside: auto; }
+  .stat-grid { break-inside: avoid; page-break-inside: avoid; }
+  .stat-card { break-inside: avoid; page-break-inside: avoid; }
+  .cap-item { break-inside: avoid; page-break-inside: avoid; }
+  .eff-table { break-inside: auto; page-break-inside: auto; }
+  .eff-table tr { break-inside: avoid; page-break-inside: avoid; }
+  .eff-table thead { display: table-header-group; }
+  .star-content ul li { break-inside: avoid; page-break-inside: avoid; }
+  .role-title { break-after: avoid; page-break-after: avoid; }
+  .job-header { break-after: avoid; page-break-after: avoid; }
+  .job-summary { break-inside: avoid; page-break-inside: avoid; }
+  .edu-card, .bottom-card { break-inside: avoid; page-break-inside: avoid; }
+  .section-title { break-after: avoid; page-break-after: avoid; }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
@@ -985,7 +1002,7 @@ body::before {
   <!-- Hero Section -->
   <section class="hero" id="hero">
     <h1 class="hero-name">雷鹏</h1>
-    <p class="hero-subtitle">AI & Search Operations Expert</p>
+    <p class="hero-subtitle">AI × 搜索 · 产品与运营专家</p>
     <div class="hero-contact">
       <span class="contact-item">
         <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
