@@ -659,6 +659,120 @@ body::before {
   transform: rotate(180deg);
 }
 
+/* AI Efficiency Overview — Stat Cards */
+.ai-overview {
+  margin-bottom: 24px;
+}
+.ai-overview-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--cyan);
+  margin-bottom: 14px;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ai-overview-title::before {
+  content: '';
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 10px var(--cyan-glow);
+}
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.stat-card {
+  background: linear-gradient(135deg, rgba(34,211,238,0.06), rgba(129,140,248,0.04));
+  border: 1px solid rgba(34,211,238,0.15);
+  border-radius: 12px;
+  padding: 16px 14px;
+  text-align: center;
+}
+.stat-num {
+  font-size: 1.7rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--cyan), var(--indigo));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+.stat-label {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+/* Capability domain chips */
+.domain-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 8px;
+}
+.domain-chip {
+  font-size: 0.78rem;
+  padding: 5px 12px;
+  border-radius: 8px;
+  background: rgba(148,163,184,0.06);
+  border: 1px solid rgba(148,163,184,0.14);
+  color: var(--text-dim);
+}
+.domain-chip b { color: var(--cyan); font-weight: 600; }
+/* Capability grid — name + description */
+.cap-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 4px 0 8px;
+}
+.cap-item {
+  background: rgba(148,163,184,0.05);
+  border: 1px solid rgba(148,163,184,0.12);
+  border-left: 3px solid rgba(34,211,238,0.5);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+.cap-item b { color: var(--cyan); font-weight: 600; }
+.cap-item span { color: var(--text-dim); }
+@media (max-width: 768px) {
+  .cap-grid { grid-template-columns: 1fr; }
+}
+/* Efficiency comparison table */
+.eff-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin: 8px 0 4px;
+}
+.eff-table th, .eff-table td {
+  text-align: left;
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.eff-table th {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  background: rgba(148,163,184,0.04);
+}
+.eff-table td { color: var(--text-dim); }
+.eff-table td strong { color: var(--text); }
+.eff-before { color: var(--text-muted); }
+.eff-after { color: var(--green); font-weight: 600; }
+.eff-gain { color: var(--cyan); font-weight: 700; white-space: nowrap; }
+@media (max-width: 768px) {
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  .eff-table { font-size: 0.78rem; }
+  .eff-table th, .eff-table td { padding: 7px 6px; }
+}
+
 /* Metric Pills */
 .metric {
   display: inline-block;
@@ -887,7 +1001,7 @@ body::before {
       </span>
     </div>
     <div class="hero-tagline">
-      6年互联网产品与运营经验，深耕<strong>AI Agent系统架构</strong>、<strong>搜索产品运营</strong>与<strong>数据驱动决策</strong>。独立设计并落地多Agent协作AI运营系统，覆盖阿里巴巴、百度、滴滴、永辉、京东全栈经验。
+      6年互联网产品与运营经验，深耕<strong>AI Agent 运营提效</strong>、<strong>搜索产品运营</strong>与<strong>数据驱动决策</strong>。独立设计并落地多Agent协作运营系统——<strong>115+ AI技能模块、10大能力域</strong>覆盖运营全流程，日常重复性工作 <strong>AI 渗透率 85%+</strong>，覆盖阿里巴巴、百度、滴滴、永辉、京东全栈经验。
     </div>
   </section>
 
@@ -918,38 +1032,80 @@ body::before {
           <div class="job-date">2026.01 - 至今</div>
         </div>
         <div class="job-summary">
-          主要负责盒马App搜索全链路运营及AI Agent运营效率体系的从0到1搭建。核心成果：独立设计并落地一套多Agent协作的AI运营系统，将搜索质量监控、品类归因分析、异动响应等运营全流程实现AI自动化。同时兼任搜索产品，覆盖100+需求PRD。
+          主要负责盒马App搜索全链路的<strong>产品 & 运营</strong>，并从0到1搭建产品&运营团队的AI Agent提效体系。核心成果：独立设计落地多Agent协作系统，沉淀 <strong>115+ AI技能模块、覆盖10大能力域</strong>，把取数、归因、排查、报告、图文配置、审核、原型设计等产品&运营全流程AI化，日常重复性工作 <strong>AI渗透率 85%+</strong>。同时兼任搜索产品，覆盖100+需求PRD。
         </div>
 
         <!-- Role 1: AI Agent System - FULLY EXPANDED BY DEFAULT -->
         <div id="sec-llm-app"></div>
         <div class="role-block" id="sec-zero-to-one">
-          <div class="role-title">职责一：AI Agent运营系统从0到1搭建（核心亮点）</div>
+          <div class="role-title">职责一：运营团队 AI Agent 提效体系从0到1（核心亮点）</div>
+
+          <!-- AI提效总览 — always visible -->
+          <div class="ai-overview">
+            <div class="ai-overview-title">AI 提效总览</div>
+            <div class="stat-grid">
+              <div class="stat-card"><div class="stat-num">115+</div><div class="stat-label">AI 技能模块</div></div>
+              <div class="stat-card"><div class="stat-num">10</div><div class="stat-label">大能力域全覆盖</div></div>
+              <div class="stat-card"><div class="stat-num">85%+</div><div class="stat-label">日常工作 AI 渗透率</div></div>
+              <div class="stat-card"><div class="stat-num">85%+</div><div class="stat-label">任务端到端无人干预</div></div>
+            </div>
+            <div class="cap-grid">
+              <div class="cap-item"><b>① 自动化SQL执行</b> <span>Chat to Data，一句话自动取数</span></div>
+              <div class="cap-item"><b>② 自动化系统配置</b> <span>按信息AI自动配置搜索后台（同义词/图文/类目）</span></div>
+              <div class="cap-item"><b>③ 统一分析方法论</b> <span>相关口径自动下探、异动自动归因</span></div>
+              <div class="cap-item"><b>④ 统一输出标准</b> <span>周月报/文档一键成稿，口径与版式统一</span></div>
+              <div class="cap-item"><b>⑤ 搜索结果自动测评</b> <span>搜索/RAG结果LLM自动打分（相关性/首位命中/无结果）+ badcase排查</span></div>
+              <div class="cap-item"><b>⑥ 自动化内容审核</b> <span>商品图文/评价AI审核直接出结论</span></div>
+              <div class="cap-item"><b>⑦ 数据可视化</b> <span>麦肯锡风图表/趋势看板自动生成</span></div>
+              <div class="cap-item"><b>⑧ 全平台联通</b> <span>钉钉/语雀/Hippo/盒马后台/MCP一线打通</span></div>
+              <div class="cap-item"><b>⑨ 浏览器自动化</b> <span>复用登录态、iPhone镜像自动巡检操作</span></div>
+              <div class="cap-item"><b>⑩ 记忆与多Agent编排</b> <span>跨session记忆 + 任务自动分派协同</span></div>
+            </div>
+          </div>
+
           <div class="star-group" data-expanded-default="true">
             <div class="star-item star-s">
               <span class="star-label">Situation</span>
               <div class="star-content">
-                搜索运营团队日常工作涉及大量数据取数分析（ODPS SQL）、搜索配置变更、异动归因、周月报产出等重复性工作，人效瓶颈明显；同时运营知识散落在个人经验中，团队协作存在口径不一致、分析路径不可复制的问题。
+                搜索运营团队日常被大量重复性工作占据——ODPS取数、异动归因、badcase排查、周月报、图文配置等，人效瓶颈明显；运营知识散落个人经验，口径不一、路径不可复制。
               </div>
             </div>
             <div class="star-collapsible expanded" data-default-expanded="true">
               <div class="star-item star-t">
                 <span class="star-label">Task</span>
                 <div class="star-content">
-                  利用大模型+Agent技术，独立设计并落地一套完整的"AI运营超级助手"——从框架设计、知识工程、技能开发到工程部署全链路Owner，实现运营团队工作范式从"人找数据"到"AI主动服务"的转变。
+                  以"提高运营 AI 渗透率、把人从重复劳动里解放出来"为目标，独立设计落地一套多Agent协作运营系统，让团队工作范式从"人找数据"转为"AI主动办事"。
                 </div>
               </div>
               <div class="star-item star-a">
                 <span class="star-label">Action</span>
                 <div class="star-content">
                   <ul>
-                    <li><strong>Hermes框架设计</strong>：自研多Agent协作框架"Hermes"，核心架构包括——①三层角色注册表（决策层/分析层/执行层）+意图路由引擎+Agent间协商协议；②7段任务管线闭环（Emerge涌现→Route路由→Decompose拆解→Execute执行→Verify验收→Retro复盘→Lesson沉淀），支持任务DAG自动编排；③4档渐进信任机制（建议模式→灰度→半托管→全托管），严级护栏硬连线不可跳过；④自愈4档降级策略（改参→换Agent→降级→升人）保障稳定性。</li>
-                    <li><strong>多Loop闭环机制</strong>：设计并实现6个核心Loop——Plan-and-Execute Loop（动态规划+反思执行循环）、Agent-Eval Loop（输出质量评估与反馈闭环）、Knowledge-Auto-Updater Loop（知识源变更自动检测+增量更新）、Execution-Progress-Notifier Loop（执行过程实时状态推送）、RAG-Knowledge-Retriever Loop（检索增强+语义召回）、State-Persistence Loop（跨session状态持久化），形成"规划→执行→评估→学习→沉淀"的自进化飞轮。</li>
-                    <li><strong>知识工程体系</strong>：将4套业务知识库（运营SOP/产品PRD/搜索算法/数据口径）系统化蒸馏为Agent可调用的结构化知识，构建本地RAG检索系统（GTE-large向量模型+关键词混合检索，<span class="metric metric-cyan" data-count="2695">2695</span>个知识chunk索引）；知识自动更新管线监控钉钉表格/语雀文档等多知识源变更，增量同步至向量库。</li>
-                    <li><strong>技能模块开发</strong>：累计开发<span class="metric metric-cyan" data-count="99">99</span>个专业AI技能模块，覆盖搜索质量诊断、笔单价多维归因、品类货架CVR分析、节日圈品爆发预测、搜索配置自动变更、自动化周月报生成、App体验日检、竞品数据采集等全业务场景；每个模块内置标准SQL模板、分析逻辑链、可视化输出规范与自检验证。</li>
-                    <li><strong>工程落地与集成</strong>：打通ODPS数据平台自动取数→大模型分析归因→图表/HTML报告自动生成→Hippo Work在线发布→钉钉群自动推送全链路闭环；接入钉钉IM双向对话（Stream模式），支持团队成员在群内@机器人直接触发分析任务。</li>
-                    <li><strong>团队赋能与开源</strong>：为团队成员封装3个独立Plugin（搜索排查专家/品类圈分析专家/笔单归因专家），内置权限自动探测与降级策略，一键安装开箱即用；产出.skill开源打包方案（含54个子skill+编排层+安装脚本），支持跨团队复制推广。</li>
+                    <li><strong>架构底座（一句话）</strong>：自研 Hermes 多Agent框架——三层角色注册 + 意图路由 + 7段任务管线 + 渐进信任护栏 + 自愈降级，配本地RAG（GTE-large 1024维 + 关键词混合检索，约7000知识chunk）与跨session记忆，支撑上层能力稳定编排。<span style="color:var(--text-muted)">（架构为手段，重点在下方渗透率与提效）</span></li>
+                    <li><strong>10大能力域 × 115+ 技能矩阵</strong>：把运营全流程拆成可被Agent执行的原子能力——数据跑数（ODPS/MaxCompute自动取数）、报告一键生成（笔单周报/品类月报/百货餐饮烘焙RTH）、搜索排查（badcase诊断/trace分析/相关性打分）、图文配置（后台驱动/预览/一键落库）、文档生产（HTML/PDF/DOCX/PPTX/XLSX）、数据可视化（麦肯锡风/Mermaid/Excalidraw）、平台联通（钉钉/语雀/Hippo/盒马后台/MCP）、浏览器自动化（复用登录态/iPhone镜像巡检）、智能记忆、多Agent编排（任务分派/评估闭环）。</li>
+                    <li><strong>渗透方式</strong>：钉钉群 @机器人即触发（Stream双向对话）+ qoder_cron 周期巡检 + Dashboard 阈值告警三轨触达，让 AI 嵌入团队日常动线，而非独立工具；配套3个开箱即用 Plugin + .skill 打包方案，支持跨团队复制。</li>
+                    <li><strong>内容审核自动化</strong>：把重人工的审核环节AI化——①<strong>商品图文单据审核</strong>（主图/文描图双通道识图，VLM主观视觉判定 + OCR硬检测，对照19条规则库逐条判定，输出整单"通过/驳回+定位到规则的原因"）；②<strong>商品评价审核与加精</strong>（从底表/钉钉表格批量拉取在线评价，按精选评价标准做初筛→文案→图片→决策四步判断，输出"是否建议加精+原因标签+是否需人工复核"，结果回写钉钉表格；批量巡检定位评价badcase与加精机会）。人工从"逐张/逐条看"转为"只复核驳回项与待定项"。</li>
+                    <li><strong>产品原型 & UI 规范</strong>：AI 直出移动端/Web 高保真产品原型图（搜索激活页/结果页/问一问对话式搜索等方案快速可视化）；沉淀 UI 设计规范（DESIGN.md + 组件/配色/排版规范），保证多需求视觉一致；支持"截图/文字描述→前端代码"图生代码，把 PRD 到可交互 Demo 的验证周期从"排期等设计/前端"压到分钟级自出。</li>
+                    <li><strong>搜索结果自动测评</strong>：搭建搜索质量自动评测体系——自动构建覆盖精准/泛化/场景/属性各类query的测试集，用 <strong>LLM-as-a-Judge</strong> 对结果自动打分（相关性/首位命中/无结果/召回），快速定位精搜/泛搜/笔记检索的无点原因；配 Agent 输出 eval 闭环，每次任务后自动评分、追踪质量趋势、识别低分环节触发改进，把"搜得准不准"从人工抽检的主观感受变成可量化、可回归的指标。</li>
+                    <li><strong>A/B 实验方案分析</strong>：建立从实验设计到结果可信度审查的标准方法——SRM 样本比失衡检测、统计显著性、护栏指标（guardrail）联审，回答"策略到底是不是真涨了"，避免把噪声/季节波动当增量，为搜索/运营策略上线效果兜底。</li>
                   </ul>
+                </div>
+              </div>
+              <div class="star-item star-a">
+                <span class="star-label">提效对照</span>
+                <div class="star-content">
+                  <table class="eff-table">
+                    <tr><th>运营场景</th><th>AI前</th><th>AI后</th><th>提效</th></tr>
+                    <tr><td><strong>搜索badcase排查</strong></td><td class="eff-before">人工 2小时</td><td class="eff-after">5分钟自动全链路根因+修复建议</td><td class="eff-gain">≈24x</td></tr>
+                    <tr><td><strong>品类周报/月报</strong></td><td class="eff-before">人工 半天</td><td class="eff-after">一键生成含趋势图+归因瀑布图并推送</td><td class="eff-gain">≈10x</td></tr>
+                    <tr><td><strong>query异动监控</strong></td><td class="eff-before">人工零散抽查</td><td class="eff-after">日均扫6300+词、自动归因273异动词</td><td class="eff-gain">全自动</td></tr>
+                    <tr><td><strong>图文分类配置</strong></td><td class="eff-before">人工逐条配</td><td class="eff-after">召回→预览→后台落库Agent驱动</td><td class="eff-gain">分钟级</td></tr>
+                    <tr><td><strong>数据取数分析</strong></td><td class="eff-before">写SQL+跑+整理</td><td class="eff-after">自然语言→自动取数归因出图</td><td class="eff-gain">日均20+次</td></tr>
+                    <tr><td><strong>商品图文审核</strong></td><td class="eff-before">人工逐张看图核规则</td><td class="eff-after">VLM+OCR双通道对照19条规则出整单结论</td><td class="eff-gain">秒级/单</td></tr>
+                    <tr><td><strong>评价加精审核</strong></td><td class="eff-before">人工逐条读评价</td><td class="eff-after">批量巡检自动打标+定位加精机会</td><td class="eff-gain">批量自动</td></tr>
+                    <tr><td><strong>产品原型/UI稿</strong></td><td class="eff-before">排期等设计/前端</td><td class="eff-after">AI直出高保真原型+图生代码可交互Demo</td><td class="eff-gain">分钟级</td></tr>
+                    <tr><td><strong>搜索/RAG质量测评</strong></td><td class="eff-before">人工抽检打分</td><td class="eff-after">LLM-as-Judge多维自动打分+趋势追踪</td><td class="eff-gain">可量化回归</td></tr>
+                  </table>
                 </div>
               </div>
             </div>
@@ -957,12 +1113,11 @@ body::before {
               <span class="star-label">Result</span>
               <div class="star-content">
                 <ul>
-                  <li>系统上线后团队<span class="metric metric-up" data-count="20">日均自动化处理数据分析任务20+次</span>，覆盖搜索/分类/交易三大数据域</li>
-                  <li>搜索badcase排查：<span class="metric metric-up">从人工2小时缩短至5分钟</span>内自动输出全链路根因（召回→排序→NER→配置）+修复建议</li>
-                  <li>品类周报/月报：从人工半天制作到<span class="metric metric-up">一键自动生成</span>含趋势图+归因瀑布图的完整报告并推送</li>
-                  <li>query异动监控：<span class="metric metric-cyan" data-count="6300">日均自动扫描6300+高量级关键词</span>，5维度WoW对比自动归因<span class="metric metric-cyan" data-count="273">273</span>个异动词并生成诊断看板</li>
-                  <li>知识沉淀：AI系统累计沉淀<span class="metric metric-cyan" data-count="2695">2695</span>条结构化知识chunk+<span class="metric metric-cyan" data-count="99">99</span>个可复用技能模块，运营经验首次实现组织级可复制</li>
-                  <li>框架验证：Hermes框架Demo通过——Agent间自动协商，<span class="metric metric-up" data-count="85">单任务端到端无人干预完成率达85%+</span></li>
+                  <li>运营日常重复性工作 <span class="metric metric-up">AI渗透率达85%+</span>，10大能力域覆盖搜索/分类/交易全数据域，团队从"人找数据"转为"AI主动办事"</li>
+                  <li>系统日均自动化处理 <span class="metric metric-up" data-count="20">数据分析任务20+次</span>；核心场景提效 <span class="metric metric-cyan">10~24倍</span>（badcase排查24x、周月报10x）</li>
+                  <li><span class="metric metric-up" data-count="85">单任务端到端无人干预完成率85%+</span>，Agent间可自动协商（如 search-expert 诊断→config-executor 出操作方案）</li>
+                  <li>内容审核AI化：<span class="metric metric-up">商品图文单据审核</span>（主图/文描双通道）与<span class="metric metric-up">评价加精巡检</span>由Agent自动出结论，人工从"逐张/逐条看"转为"只复核驳回项"，审核吞吐大幅提升</li>
+                  <li>沉淀 <span class="metric metric-cyan" data-count="115">115+ 可复用AI技能</span> + 约7000条结构化知识chunk，运营经验首次实现组织级可复制、可迁移</li>
                 </ul>
               </div>
             </div>
