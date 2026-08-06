@@ -842,6 +842,49 @@ body::before {
   fill: var(--cyan);
 }
 
+/* One-click PDF Export Button */
+.pdf-btn {
+  position: fixed;
+  bottom: 32px;
+  right: 88px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 22px;
+  background: rgba(34, 211, 238, 0.15);
+  border: 1px solid rgba(34, 211, 238, 0.35);
+  backdrop-filter: blur(10px);
+  color: var(--cyan);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-decoration: none;
+  cursor: pointer;
+  z-index: 999;
+  transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.pdf-btn:hover {
+  background: rgba(34, 211, 238, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(34, 211, 238, 0.3);
+  color: var(--cyan);
+}
+
+.pdf-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
+.pdf-btn.is-printing {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
 /* Bottom Sections */
 .bottom-section {
   padding: 40px 0 80px;
@@ -901,6 +944,7 @@ body::before {
   .bottom-grid { grid-template-columns: 1fr; }
   .section { padding: 40px 0; }
   .back-to-top { bottom: 20px; right: 20px; width: 40px; height: 40px; }
+  .pdf-btn { bottom: 20px; right: 70px; height: 40px; padding: 0 13px; font-size: 0.8rem; }
 }
 
 @media (max-width: 480px) {
@@ -931,7 +975,7 @@ body::before {
     background: #fff !important;
     color: #1a1a1a !important;
   }
-  body::before, .orb, .scroll-progress, .back-to-top { display: none !important; }
+  body::before, .orb, .scroll-progress, .back-to-top, .pdf-btn { display: none !important; }
   .nav-bar { display: none !important; }
   .hero-name {
     -webkit-text-fill-color: #1a1a1a !important;
@@ -1717,6 +1761,13 @@ body::before {
 
 </div><!-- end container -->
 
+<!-- One-click PDF Export -->
+<a class="pdf-btn" id="pdfBtn" href="Leipeng-Resume.pdf" download="雷鹏-简历.pdf"
+   aria-label="导出 PDF 简历" title="下载 PDF 版简历（若文件不可用将自动改为浏览器打印另存为 PDF）">
+  <svg viewBox="0 0 24 24"><path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5v-2z"/></svg>
+  <span>导出 PDF</span>
+</a>
+
 <!-- Back to Top Button -->
 <button class="back-to-top" id="backToTop" aria-label="Back to top">
   <svg viewBox="0 0 24 24"><path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/></svg>
@@ -1751,6 +1802,45 @@ body::before {
   backToTop.addEventListener('click', function() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
+
+  // === One-click PDF export (direct download, with print fallback) ===
+  const pdfBtn = document.getElementById('pdfBtn');
+  if (pdfBtn) {
+    const pdfHref = pdfBtn.getAttribute('href');
+    let printMode = false;
+
+    function switchToPrintMode() {
+      printMode = true;
+      pdfBtn.removeAttribute('download');
+      pdfBtn.setAttribute('href', '#');
+      const label = pdfBtn.querySelector('span');
+      if (label) label.textContent = '打印 / 存为 PDF';
+      pdfBtn.title = '打开打印面板，目标选择"另存为 PDF"';
+    }
+
+    // Probe whether the pre-rendered PDF is reachable; degrade gracefully if not.
+    if (location.protocol === 'file:') {
+      // file:// cannot be probed reliably by fetch — keep the direct link as-is.
+    } else {
+      fetch(pdfHref, { method: 'HEAD' })
+        .then(function(res) { if (!res.ok) switchToPrintMode(); })
+        .catch(function() { switchToPrintMode(); });
+    }
+
+    pdfBtn.addEventListener('click', function(e) {
+      if (!printMode) return;
+      e.preventDefault();
+      // Expand every collapsed STAR block so nothing is missing from the printout.
+      document.querySelectorAll('.star-collapsible').forEach(function(el) {
+        el.classList.add('expanded');
+      });
+      pdfBtn.classList.add('is-printing');
+      setTimeout(function() {
+        window.print();
+        pdfBtn.classList.remove('is-printing');
+      }, 300);
+    });
+  }
 
   // === Nav bar scroll shadow ===
   const navBar = document.getElementById('navBar');
